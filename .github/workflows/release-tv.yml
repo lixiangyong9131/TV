@@ -89,7 +89,13 @@ jobs:
           fi
           echo "Using $sm"
           yes | "$sm" --licenses >/dev/null || true
-          "$sm" "platforms;android-37" "build-tools;37.0.0" "platform-tools"
+          # API 37 is published as android-37.0; there is no platforms;android-37 package.
+          "$sm" "platforms;android-37.0" "build-tools;37.0.0" "platform-tools"
+          # compileSdk 37 still looks for platforms/android-37
+          if [ -d "$ANDROID_HOME/platforms/android-37.0" ] && [ ! -e "$ANDROID_HOME/platforms/android-37" ]; then
+            ln -s android-37.0 "$ANDROID_HOME/platforms/android-37"
+          fi
+          ls -la "$ANDROID_HOME/platforms"
 
       - name: Download Media3 libraries
         env:
