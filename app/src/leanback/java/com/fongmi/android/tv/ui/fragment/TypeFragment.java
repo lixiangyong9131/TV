@@ -4,7 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import androidx.appcompat.widget.LinearLayoutCompat;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -226,10 +226,10 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     }
 
     private void showFilter() {
-        LinearLayout box = mBinding.filterBox;
+        LinearLayoutCompat box = mBinding.filterBox;
         box.removeAllViews();
         for (Filter filter : mFilters) {
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ResUtil.dp2px(64));
+            LinearLayoutCompat.LayoutParams params = new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ResUtil.dp2px(64));
             params.bottomMargin = ResUtil.dp2px(8);
             box.addView(createFilterRow(filter), params);
         }

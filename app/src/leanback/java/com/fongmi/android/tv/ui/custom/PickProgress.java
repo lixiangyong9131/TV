@@ -45,7 +45,10 @@ public final class PickProgress {
         binding.pickTitle.setText(headline == null || headline.isEmpty() ? binding.getRoot().getContext().getString(R.string.pick_title) : headline);
         binding.pickList.setVisibility(View.VISIBLE);
         if (binding.pickList.getLayoutManager() == null) binding.pickList.setLayoutManager(new LinearLayoutManager(binding.getRoot().getContext()));
-        if (!(binding.pickList.getAdapter() instanceof QualityRankAdapter adapter)) {
+        QualityRankAdapter adapter;
+        if (binding.pickList.getAdapter() instanceof QualityRankAdapter existing) {
+            adapter = existing;
+        } else {
             adapter = new QualityRankAdapter(listener);
             binding.pickList.setAdapter(adapter);
         }
