@@ -86,6 +86,7 @@ public class CollectActivity extends BaseActivity {
 
     @Override
     protected void initEvent() {
+        mBinding.speedTest.setOnClickListener(v -> VideoActivity.pick(this, getKeyword()));
         mBinding.pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {

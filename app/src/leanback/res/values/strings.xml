@@ -22,5 +22,19 @@
     <string name="history_delete">Delete</string>
     <string name="play_more">More</string>
     <string name="play_more_close">Less</string>
+    <string name="pick_action">Speed test</string>
+    <string name="pick_title">Checking sources</string>
+    <string name="pick_play_best">Play best</string>
+    <string name="pick_play">Play</string>
+    <string name="pick_play_wait">Testing</string>
+    <string name="pick_play_ready">Ready</string>
+    <string name="pick_list">Highest score first. Choose a source, or play the best.</string>
+    <string name="pick_try">No speed score. Choose a source to play it.</string>
+    <string name="pick_empty">No playable source found.</string>
+    <string name="pick_unscored">Not scored</string>
+    <string name="pick_good">Strong</string>
+    <string name="pick_search_count">Checked %1$d/%2$d sites, %3$d matches</string>
+    <string name="pick_measure_plain">Testing %1$d/%2$d</string>
+    <string name="pick_opening_title">Opening “%s”</string>
 
 </resources>

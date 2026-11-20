@@ -22,5 +22,19 @@
     <string name="history_delete">刪除</string>
     <string name="play_more">更多</string>
     <string name="play_more_close">收起</string>
+    <string name="pick_action">測速</string>
+    <string name="pick_title">正在測速</string>
+    <string name="pick_play_best">播放最優</string>
+    <string name="pick_play">播放</string>
+    <string name="pick_play_wait">測速中</string>
+    <string name="pick_play_ready">測完</string>
+    <string name="pick_list">分數高的在前。選一條播放，或播放最優。</string>
+    <string name="pick_try">沒有測通。選一條直接播放。</string>
+    <string name="pick_empty">沒有測到能播的源</string>
+    <string name="pick_unscored">未測通</string>
+    <string name="pick_good">優質</string>
+    <string name="pick_search_count">已查 %1$d/%2$d 個站點，%3$d 個結果</string>
+    <string name="pick_measure_plain">正在測速 %1$d/%2$d</string>
+    <string name="pick_opening_title">正在打開「%s」</string>
 
 </resources>

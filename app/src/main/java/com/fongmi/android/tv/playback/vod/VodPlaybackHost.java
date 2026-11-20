@@ -141,6 +141,13 @@ public interface VodPlaybackHost {
 
     void showDetailMessage(String msg);
 
+    default void hidePickProgress() {
+    }
+
+    default boolean onRankedDetailMiss(String msg) {
+        return false;
+    }
+
     void showSwitchLine(Flag flag);
 
     void showSwitchSource(Vod item);

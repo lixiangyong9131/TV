@@ -89,7 +89,10 @@ public class App extends Application implements Application.ActivityLifecycleCal
         super.attachBaseContext(base);
         Runtime.set(base);
         Runtime.setActivity(App::activity);
-        Runtime.setToast(text -> App.post(() -> Notify.show(text)));
+        Runtime.setToast(text -> App.post(() -> {
+            if (com.fongmi.android.tv.playback.vod.PickSilence.toastMuted()) return;
+            Notify.show(text);
+        }));
         Runtime.setDialog(SpiderDialog::show);
     }
 

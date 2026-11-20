@@ -117,7 +117,10 @@ public final class NodeRuntime implements NodeRuntimeApi.Callback {
 
     private String onToast(JsonObject options) {
         String message = Json.safeString(options, "message");
-        if (!message.isEmpty()) App.post(() -> Notify.show(message));
+        if (!message.isEmpty()) App.post(() -> {
+            if (com.fongmi.android.tv.playback.vod.PickSilence.toastMuted()) return;
+            Notify.show(message);
+        });
         return SUCCESS_RESPONSE;
     }
 

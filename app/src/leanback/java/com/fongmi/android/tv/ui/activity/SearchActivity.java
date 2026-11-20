@@ -92,6 +92,10 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
             }
         });
         mBinding.mic.setOnClickListener(v -> mBinding.mic.start());
+        mBinding.speedTest.setOnClickListener(v -> {
+            if (empty()) return;
+            VideoActivity.pick(this, mBinding.keyword.getText().toString().trim());
+        });
         mBinding.mic.setListener(this, new CustomTextListener() {
             @Override
             public void onResults(String result) {
@@ -261,8 +265,8 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
     private boolean handleKeywordKey(KeyEvent event) {
         if (!KeyUtil.isRightKey(event)) return false;
         if (mBinding.keyword.getSelectionEnd() < mBinding.keyword.getText().length()) return false;
-        boolean hasRecord = mBinding.recordLayout.getVisibility() == View.VISIBLE;
-        return focusFirst(hasRecord ? mBinding.recordRecycler : mBinding.wordRecycler);
+        mBinding.speedTest.requestFocus();
+        return true;
     }
 
     private boolean handleKeyboardKey(KeyEvent event, View item) {

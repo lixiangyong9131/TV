@@ -452,6 +452,9 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         mBinding.heroRemark.setText(hero.getRemarks());
         ImgUtil.load(hero.getName(), hero.getPic(), mBinding.heroImage);
         mBinding.heroPlay.setOnClickListener(v -> onItemClick(mHero));
+        mBinding.heroSpeed.setOnClickListener(v -> {
+            if (mHero != null) VideoActivity.pick(this, mHero);
+        });
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

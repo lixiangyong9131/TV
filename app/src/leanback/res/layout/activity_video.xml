@@ -216,7 +216,7 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center"
-            android:nextFocusRight="@id/change"
+            android:nextFocusRight="@id/speedTest"
             android:nextFocusUp="@id/video"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
@@ -224,6 +224,24 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             app:drawableStartCompat="@drawable/ic_detail_change" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/speedTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/selector_item"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center"
+            android:nextFocusLeft="@id/change"
+            android:nextFocusRight="@id/speedTest"
+            android:nextFocusUp="@id/video"
+            android:nextFocusDown="@id/flag"
+            android:singleLine="true"
+            android:text="@string/pick_action"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -310,4 +328,11 @@
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/pick"
+        layout="@layout/view_pick_progress"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 </com.fongmi.android.tv.ui.custom.ProgressLayout>

@@ -292,9 +292,25 @@
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:nextFocusLeft="@id/navVod"
+                    android:nextFocusRight="@id/heroSpeed"
                     android:nextFocusUp="@id/title"
                     android:nextFocusDown="@id/recycler"
                     android:text="@string/play"
+                    android:textColor="@color/white"
+                    android:textSize="20sp" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/heroSpeed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/selector_item"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:nextFocusLeft="@id/heroPlay"
+                    android:nextFocusUp="@id/title"
+                    android:nextFocusDown="@id/recycler"
+                    android:text="@string/pick_action"
                     android:textColor="@color/white"
                     android:textSize="20sp" />
             </androidx.appcompat.widget.LinearLayoutCompat>
