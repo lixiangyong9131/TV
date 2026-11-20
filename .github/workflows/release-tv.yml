@@ -2,13 +2,13 @@ name: Release TV
 
 # Push a version tag such as v5.9.2 to publish an official leanback (TV) release.
 # Required Actions secrets:
-#   SIGNING_STORE_BASE64              base64 of the release keystore (.jks / .keystore)
-#   SIGNING_STORE_PASSWORD            keystore password
-#   SIGNING_KEY_ALIAS                 key alias
-#   SIGNING_KEY_PASSWORD              optional; defaults to SIGNING_STORE_PASSWORD
-#   LIB_MPVPLAYER_RELEASE_AAR_BASE64  base64 of app/libs/lib-mpvplayer-release.aar
-#   LIB_DECODER_FFMPEG_RELEASE_AAR_BASE64  base64 of app/libs/lib-decoder-ffmpeg-release.aar
-# Encode a file with: base64 -w0 path/to/file
+#   SIGNING_STORE_BASE64     base64 of the release keystore (.jks / .keystore)
+#   SIGNING_STORE_PASSWORD   keystore password
+#   SIGNING_KEY_ALIAS        key alias
+#   SIGNING_KEY_PASSWORD     optional; defaults to SIGNING_STORE_PASSWORD
+# Native/Media3 libraries are downloaded from the ci-libs prerelease
+# (all gitignored app/libs/lib-*.aar). They cannot be stored as Actions
+# secrets because GitHub secrets are limited to 64 KB.
 
 on:
   push:
@@ -32,12 +32,10 @@ jobs:
           SIGNING_STORE_BASE64: ${{ secrets.SIGNING_STORE_BASE64 }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          LIB_MPVPLAYER_RELEASE_AAR_BASE64: ${{ secrets.LIB_MPVPLAYER_RELEASE_AAR_BASE64 }}
-          LIB_DECODER_FFMPEG_RELEASE_AAR_BASE64: ${{ secrets.LIB_DECODER_FFMPEG_RELEASE_AAR_BASE64 }}
         run: |
           set -euo pipefail
           missing=()
-          for name in SIGNING_STORE_BASE64 SIGNING_STORE_PASSWORD SIGNING_KEY_ALIAS LIB_MPVPLAYER_RELEASE_AAR_BASE64 LIB_DECODER_FFMPEG_RELEASE_AAR_BASE64; do
+          for name in SIGNING_STORE_BASE64 SIGNING_STORE_PASSWORD SIGNING_KEY_ALIAS; do
             if [ -z "${!name}" ]; then
               missing+=("$name")
             fi
@@ -75,14 +73,32 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Prepare signing key and native libraries
+      - name: Download Media3 libraries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p app/libs
+          gh release download ci-libs --repo "${{ github.repository }}" --dir app/libs --pattern 'lib-*.aar'
+          count=$(find app/libs -maxdepth 1 -name 'lib-*.aar' | wc -l)
+          echo "Downloaded ${count} lib-*.aar files from ci-libs"
+          if [ ! -f app/libs/lib-mpvplayer-release.aar ] || [ ! -f app/libs/lib-decoder-ffmpeg-release.aar ]; then
+            echo "ci-libs is missing lib-mpvplayer-release.aar or lib-decoder-ffmpeg-release.aar"
+            ls -lh app/libs || true
+            exit 1
+          fi
+          if [ "$count" -lt 10 ]; then
+            echo "ci-libs did not provide a complete Media3 kit"
+            ls -lh app/libs || true
+            exit 1
+          fi
+
+      - name: Prepare signing key
         env:
           SIGNING_STORE_BASE64: ${{ secrets.SIGNING_STORE_BASE64 }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          LIB_MPVPLAYER_RELEASE_AAR_BASE64: ${{ secrets.LIB_MPVPLAYER_RELEASE_AAR_BASE64 }}
-          LIB_DECODER_FFMPEG_RELEASE_AAR_BASE64: ${{ secrets.LIB_DECODER_FFMPEG_RELEASE_AAR_BASE64 }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -90,19 +106,12 @@ jobs:
           from pathlib import Path
 
           root = Path(os.environ["GITHUB_WORKSPACE"])
-
-          def write_secret(name, dest):
-              raw = os.environ[name].strip()
-              data = base64.b64decode(raw, validate=False)
-              if not data:
-                  sys.exit(f"{name} decoded to an empty file")
-              dest.parent.mkdir(parents=True, exist_ok=True)
-              dest.write_bytes(data)
-              print(f"Wrote {dest.relative_to(root)} ({len(data)} bytes)")
-
-          write_secret("SIGNING_STORE_BASE64", root / "signing.jks")
-          write_secret("LIB_MPVPLAYER_RELEASE_AAR_BASE64", root / "app/libs/lib-mpvplayer-release.aar")
-          write_secret("LIB_DECODER_FFMPEG_RELEASE_AAR_BASE64", root / "app/libs/lib-decoder-ffmpeg-release.aar")
+          raw = os.environ["SIGNING_STORE_BASE64"].strip()
+          data = base64.b64decode(raw, validate=False)
+          if not data:
+              sys.exit("SIGNING_STORE_BASE64 decoded to an empty file")
+          (root / "signing.jks").write_bytes(data)
+          print(f"Wrote signing.jks ({len(data)} bytes)")
 
           sdk = os.environ.get("ANDROID_HOME") or os.environ.get("ANDROID_SDK_ROOT")
           if not sdk:
@@ -150,6 +159,5 @@ jobs:
       - name: Remove signing material
         if: always()
         run: |
-          rm -f signing.jks local.properties \
-            app/libs/lib-mpvplayer-release.aar \
-            app/libs/lib-decoder-ffmpeg-release.aar
+          rm -f signing.jks local.properties
+          rm -f app/libs/lib-*.aar
