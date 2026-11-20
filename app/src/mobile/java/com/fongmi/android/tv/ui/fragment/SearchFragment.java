@@ -31,6 +31,8 @@ import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.adapter.RecordAdapter;
 import com.fongmi.android.tv.ui.adapter.WordAdapter;
+import com.fongmi.android.tv.ui.activity.HomeActivity;
+import com.fongmi.android.tv.ui.activity.VideoActivity;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomTextListener;
 import com.fongmi.android.tv.ui.dialog.SiteDialog;
@@ -77,11 +79,23 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
     @Override
     protected void initMenu() {
         if (isHidden()) return;
+        if (requireActivity() instanceof HomeActivity) {
+            mBinding.toolbar.setNavigationIcon(null);
+            mBinding.toolbar.setOnMenuItemClickListener(item -> onMenuItemSelected(item));
+            updateResetMenu();
+            return;
+        }
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
         activity.setSupportActionBar(mBinding.toolbar);
         activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         activity.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         activity.setTitle("");
+    }
+
+    private void updateResetMenu() {
+        MenuItem reset = mBinding.toolbar.getMenu().findItem(R.id.action_reset);
+        if (reset != null) reset.setVisible(!empty());
+        requireActivity().invalidateOptionsMenu();
     }
 
     @Override
@@ -109,7 +123,7 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
         mBinding.keyword.addTextChangedListener(new CustomTextListener() {
             @Override
             public void afterTextChanged(Editable s) {
-                requireActivity().invalidateOptionsMenu();
+                updateResetMenu();
                 getWord(s.toString());
             }
         });
@@ -120,7 +134,7 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
 
     private void checkKeyword() {
         boolean visible = requireActivity().getSupportFragmentManager().findFragmentByTag(CollectFragment.class.getSimpleName()) != null;
-        if (TextUtils.isEmpty(getKeyword()) && !visible) Util.showKeyboard(mBinding.keyword);
+        if (TextUtils.isEmpty(getKeyword()) && !visible && !(requireActivity() instanceof HomeActivity)) Util.showKeyboard(mBinding.keyword);
         setKeyword(getKeyword());
         getWord(getKeyword());
     }
@@ -135,7 +149,7 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
         String keyword = mBinding.keyword.getText().toString().trim();
         App.post(() -> mRecordAdapter.add(keyword), 250);
         Util.hideKeyboard(mBinding.keyword);
-        collect(keyword);
+        VideoActivity.pick(requireActivity(), keyword);
     }
 
     private void collect(String keyword) {
@@ -184,7 +198,7 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
 
     private void onReset() {
         mBinding.keyword.setText("");
-        requireActivity().invalidateOptionsMenu();
+        updateResetMenu();
     }
 
     private void onSite() {
@@ -225,8 +239,12 @@ public class SearchFragment extends BaseFragment implements MenuProvider, WordAd
 
     @Override
     public void onHiddenChanged(boolean hidden) {
-        if (hidden) requireActivity().removeMenuProvider(this);
-        else initMenu();
+        if (hidden) {
+            Util.hideKeyboard(mBinding.keyword);
+            requireActivity().removeMenuProvider(this);
+        } else {
+            initMenu();
+        }
     }
 
     @Override

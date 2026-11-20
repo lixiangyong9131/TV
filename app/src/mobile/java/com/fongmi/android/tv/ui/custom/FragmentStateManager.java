@@ -1,7 +1,5 @@
 package com.fongmi.android.tv.ui.custom;
 
-import static androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN;
-
 import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
@@ -28,7 +26,7 @@ public class FragmentStateManager {
         String tag = getTag(position);
         Fragment fragment = fm.findFragmentByTag(tag);
         fragment = (fragment == null) ? factory.apply(position) : fragment;
-        FragmentTransaction ft = fm.beginTransaction().setTransition(TRANSIT_FRAGMENT_OPEN);
+        FragmentTransaction ft = fm.beginTransaction();
         if (fm.findFragmentByTag(tag) == null) ft.add(container.getId(), fragment, tag);
         Fragment current = fm.getPrimaryNavigationFragment();
         if (current != null && current != fragment) ft.hide(current);

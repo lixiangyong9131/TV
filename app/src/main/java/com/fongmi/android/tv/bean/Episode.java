@@ -64,6 +64,14 @@ public class Episode implements Parcelable, Diffable<Episode> {
         return TextUtils.isEmpty(desc) ? "" : desc;
     }
 
+    public String getLabel() {
+        String title = getName().trim();
+        String extra = getDesc().trim();
+        if (title.isEmpty()) return extra;
+        if (extra.isEmpty() || title.contains(extra) || extra.contains(title)) return title;
+        return extra.concat(title);
+    }
+
     public String getUrl() {
         return TextUtils.isEmpty(url) ? "" : url;
     }

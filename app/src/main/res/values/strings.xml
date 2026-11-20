@@ -1,7 +1,7 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
 
     <!-- App -->
-    <string name="app_name">TV</string>
+    <string name="app_name">MEOW</string>
 
     <!-- Live -->
     <string name="live_pass">Pass</string>
@@ -17,10 +17,24 @@
     <string name="detail_director">Director: <xliff:g name="name">%s</xliff:g></string>
     <string name="detail_actor">Actor: <xliff:g name="name">%s</xliff:g></string>
     <string name="detail_content">Summary: <xliff:g name="name">%s</xliff:g></string>
+    <string name="detail_douban_score">Douban</string>
+    <string name="detail_cast">Cast</string>
+    <string name="detail_intro">Summary</string>
     <string name="detail_desc">Summary</string>
+    <string name="detail_source">Source</string>
+    <string name="detail_expand_intro">More ▾</string>
+    <string name="detail_collapse_intro">Less ▴</string>
+    <string name="detail_all_episodes">See all <xliff:g name="count">%d</xliff:g> episodes</string>
+    <string name="detail_collapse_episodes">Show less</string>
+    <string name="detail_play_episode">Play <xliff:g name="name">%s</xliff:g></string>
+    <string name="detail_play_episode_num">Play episode <xliff:g name="num">%d</xliff:g></string>
+    <string name="detail_resume">Resume</string>
+    <string name="detail_resume_episode">Resume <xliff:g name="name">%s</xliff:g></string>
+    <string name="detail_resume_episode_num">Resume episode <xliff:g name="num">%d</xliff:g></string>
 
     <!-- Keep -->
     <string name="keep">Keep</string>
+    <string name="keep_done">Saved</string>
     <string name="keep_add">Added</string>
     <string name="keep_del">Removed</string>
 
@@ -51,6 +65,45 @@
     <string name="play_scale">Default</string>
     <string name="play_config">Config</string>
     <string name="play_change">Change</string>
+    <string name="play_quality_switch">Another</string>
+    <string name="play_quality_picking">Checking for a fast HD source…</string>
+    <string name="play_quality_none">No source reached 200KB/s</string>
+    <string name="play_quality_slow">No source reached 200KB/s. Choose one yourself.</string>
+    <string name="pick_title">Checking picture quality</string>
+    <string name="pick_loading">Loading the detail…</string>
+    <string name="pick_searching">Looking across sites for “%s”</string>
+    <string name="pick_found">Found %1$d matching titles, checking speed</string>
+    <string name="pick_measuring">Measuring %s</string>
+    <string name="pick_ready">Fast HD source selected</string>
+    <string name="pick_step_search">Find</string>
+    <string name="pick_step_measure">Speed</string>
+    <string name="pick_step_ready">Pick</string>
+    <string name="pick_hold">Finished sources show up below.</string>
+    <string name="pick_list">Highest score first. Go back to pick another.</string>
+    <string name="pick_try">Not scored. Tap one to play it.</string>
+    <string name="pick_unscored">Not scored, tap to play</string>
+    <string name="pick_score">pts</string>
+    <string name="pick_opening">Opening</string>
+    <string name="pick_opening_title">Opening “%s”</string>
+    <string name="pick_empty">No playable source found.</string>
+    <string name="pick_good">Strong</string>
+    <string name="pick_play">Play</string>
+    <string name="pick_play_wait">Testing</string>
+    <string name="pick_play_ready">Ready</string>
+    <string name="pick_play_none">No speed</string>
+    <string name="home_banner">Top picks</string>
+    <string name="home_banner_series">SERIES</string>
+    <string name="home_banner_top3">TOP 3</string>
+    <string name="home_banner_top_n">TOP %d</string>
+    <string name="pick_row_search">Find a match</string>
+    <string name="pick_row_measure">Check speed</string>
+    <string name="pick_row_open">Open this one</string>
+    <string name="pick_search_wait">Waiting to search</string>
+    <string name="pick_search_count">Checked %1$d/%2$d sites, %3$d matches</string>
+    <string name="pick_measure_wait">Waiting for the speed check</string>
+    <string name="pick_measure_plain">Checking %1$d/%2$d</string>
+    <string name="pick_measure_count">Checking %1$d/%2$d · %3$s</string>
+    <string name="pick_open_wait">Waiting to open</string>
     <string name="play_invert">Invert</string>
     <string name="play_across">Across</string>
     <string name="play_reverse">Reverse</string>
@@ -420,11 +473,12 @@
     <string name="error_video_effect_dolby_vision_passthrough">Video settings are unavailable for Dolby Vision passthrough</string>
     <string name="error_play_tvbus">Error code: <xliff:g name="name">%s</xliff:g></string>
     <string name="error_detail">No play data</string>
-    <string name="error_empty">Nothing here 👀</string>
+    <string name="error_empty">Nothing here</string>
 
     <!-- Update -->
     <string name="update_version">New version <xliff:g name="name">%s</xliff:g></string>
     <string name="update_check">Checking for updates…</string>
+    <string name="update_latest">Already up to date</string>
     <string name="update_confirm">Update</string>
     <string name="update_background">Download in background</string>
     <string name="update_downloading">Downloading update…</string>

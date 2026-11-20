@@ -43,7 +43,7 @@ public class PiP {
 
     private RemoteAction getPlayPauseAction(Activity activity, boolean play) {
         if (play) return buildRemoteAction(activity, R.drawable.exo_icon_pause, R.string.exo_controls_pause_description, ActionEvent.PAUSE);
-        return buildRemoteAction(activity, R.drawable.exo_icon_play, R.string.exo_controls_play_description, ActionEvent.PLAY);
+        return buildRemoteAction(activity, com.fongmi.android.tv.R.drawable.ic_kino_play, R.string.exo_controls_play_description, ActionEvent.PLAY);
     }
 
     public void update(Activity activity, View view) {

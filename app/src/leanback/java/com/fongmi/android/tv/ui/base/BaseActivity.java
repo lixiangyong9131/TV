@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.ui.custom.CustomWallView;
+import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Util;
 
 import org.greenrobot.eventbus.EventBus;
@@ -116,7 +117,14 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        Notify.attach(this);
+    }
+
+    @Override
     protected void onDestroy() {
+        Notify.detach(this);
         EventBus.getDefault().unregister(this);
         super.onDestroy();
     }

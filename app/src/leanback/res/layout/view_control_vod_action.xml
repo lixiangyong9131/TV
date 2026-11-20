@@ -13,10 +13,19 @@
         android:orientation="horizontal">
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/next"
+            android:id="@+id/qualitySwitch"
             style="@style/Control"
             android:layout_marginEnd="8dp"
             android:nextFocusLeft="@id/ending"
+            android:text="@string/play_quality_switch"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/next"
+            style="@style/Control"
+            android:layout_marginEnd="8dp"
+            android:nextFocusLeft="@id/qualitySwitch"
             android:text="@string/play_next" />
 
         <com.google.android.material.textview.MaterialTextView

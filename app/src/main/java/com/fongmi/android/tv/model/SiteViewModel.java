@@ -108,7 +108,7 @@ public class SiteViewModel extends ViewModel {
     private void handleError(TaskType type, MutableLiveData<Result> liveData, Throwable error) {
         String message = Notify.getError(error);
         if (liveData != null) liveData.setValue(message == null ? Result.empty() : Result.error(message));
-        if (type == TaskType.RESULT && message != null) Notify.show(message);
+        if (type == TaskType.RESULT && message != null && !com.fongmi.android.tv.playback.vod.PickSilence.toastMuted()) Notify.show(message);
         error.printStackTrace();
     }
 

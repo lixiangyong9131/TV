@@ -15,6 +15,7 @@ public class Product {
     }
 
     public static int getColumn(Style style) {
+        if (style.isChart()) return 1;
         return style.isLand() ? getColumn() - 1 : getColumn();
     }
 

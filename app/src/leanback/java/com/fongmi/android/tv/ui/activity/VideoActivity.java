@@ -3,6 +3,7 @@ package com.fongmi.android.tv.ui.activity;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -55,6 +56,10 @@ import com.fongmi.android.tv.playback.PlaybackAction;
 import com.fongmi.android.tv.playback.PlaybackIntent;
 import com.fongmi.android.tv.playback.PlaybackReset;
 import com.fongmi.android.tv.playback.PlaybackResult;
+import com.fongmi.android.tv.playback.vod.BestSourceOpener;
+import com.fongmi.android.tv.playback.vod.RankedLine;
+import com.fongmi.android.tv.playback.vod.PickSilence;
+import com.fongmi.android.tv.playback.vod.PickStatus;
 import com.fongmi.android.tv.playback.vod.VodDetailResult;
 import com.fongmi.android.tv.playback.vod.VodPlayRequest;
 import com.fongmi.android.tv.playback.vod.VodPlaybackController;
@@ -71,8 +76,10 @@ import com.fongmi.android.tv.ui.adapter.FlagAdapter;
 import com.fongmi.android.tv.ui.adapter.PartAdapter;
 import com.fongmi.android.tv.ui.adapter.QualityAdapter;
 import com.fongmi.android.tv.ui.adapter.QuickAdapter;
+import com.fongmi.android.tv.ui.custom.PickProgress;
 import com.fongmi.android.tv.ui.custom.VodInput;
 import com.fongmi.android.tv.ui.custom.CustomMovement;
+import com.fongmi.android.tv.ui.custom.DoubanDetail;
 import com.fongmi.android.tv.ui.dialog.ChapterDialog;
 import com.fongmi.android.tv.ui.dialog.ContentDialog;
 import com.fongmi.android.tv.ui.dialog.DanmakuDialog;
@@ -93,6 +100,8 @@ import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Sniffer;
 import com.fongmi.android.tv.utils.Traffic;
 import com.fongmi.android.tv.utils.Util;
+import com.fongmi.android.tv.utils.MetaTags;
+import com.fongmi.android.tv.utils.VodScores;
 import com.github.bassaer.library.MDColor;
 import com.github.catvod.utils.UriUtil;
 
@@ -158,6 +167,27 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     public static void collect(Activity activity, String key, Vod item) {
         Intent intent = createIntent(activity, key, item);
         intent.putExtra("collect", true);
+        activity.startActivity(intent);
+    }
+
+    public static void pick(Activity activity, String name) {
+        Intent intent = new Intent(activity, VideoActivity.class);
+        intent.putExtra("pickBest", true);
+        intent.putExtra("fromIndex", true);
+        intent.putExtra("name", name);
+        intent.putExtra("key", "");
+        intent.putExtra("id", "");
+        activity.startActivity(intent);
+    }
+
+    public static void pick(Activity activity, Vod item) {
+        Intent intent = new Intent(activity, VideoActivity.class);
+        intent.putExtra("pickBest", true);
+        intent.putExtra("fromIndex", true);
+        intent.putExtra("name", item.getName());
+        intent.putExtra("key", item.getSiteKey());
+        intent.putExtra("id", item.getId());
+        putPic(intent, item.getPic());
         activity.startActivity(intent);
     }
 
@@ -331,6 +361,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         setVideoView();
         setViewModel();
         renderFallbackName(getName());
+        mBinding.detailPoster.setVisibility(View.GONE);
         checkCast();
         checkId();
     }
@@ -341,6 +372,8 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         mBinding.keep.setOnClickListener(view -> onKeep());
         mBinding.video.setOnClickListener(view -> onVideo());
         mBinding.change.setOnClickListener(view -> onChange());
+        mBinding.qualitySwitch.setOnClickListener(view -> mVod.switchQualitySource());
+        mBinding.control.action.qualitySwitch.setOnClickListener(view -> mVod.switchQualitySource());
         mBinding.content.setOnClickListener(view -> onContent());
         mBinding.control.action.text.setOnClickListener(this::onTrack);
         mBinding.control.action.audio.setOnClickListener(this::onTrack);
@@ -519,7 +552,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     @Override
     public boolean canTrackPlaybackProgress() {
-        return isWebPlaybackActive() ? canTrackActivePlaybackProgress() : isPlaybackCurrent() && player().isVod() && !isIsoNavigationPlayback();
+        return isWebPlaybackActive() ? canTrackActivePlaybackProgress() : isPlaybackCurrent() && !isIsoNavigationPlayback();
     }
 
     @Override
@@ -693,6 +726,13 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     @Override
+    public void renderQualitySwitch(boolean visible) {
+        int visibility = visible ? View.VISIBLE : View.GONE;
+        mBinding.qualitySwitch.setVisibility(visibility);
+        mBinding.control.action.qualitySwitch.setVisibility(visibility);
+    }
+
+    @Override
     public void renderEpisodes(List<Episode> items) {
         setEpisodeAdapter(items);
     }
@@ -789,7 +829,66 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     @Override
     public void showDetailMessage(String msg) {
+        if (pickHeld || PickSilence.toastMuted()) return;
         Notify.show(msg);
+    }
+
+    private boolean pickHeld;
+
+    @Override
+    public void renderPickProgress(PickStatus status) {
+        if (rankedChosen || pickSettled) return;
+        holdPage(true);
+        PickProgress.show(mBinding.pick, getName(), status);
+    }
+
+    @Override
+    public void hidePickProgress() {
+        holdPage(false);
+        PickSilence.unmuteToast();
+        PickProgress.hide(mBinding.pick);
+    }
+
+    @Override
+    public void finishPickMeasure() {
+        pickSettled = true;
+        if (rankedChosen) return;
+        PickProgress.complete(mBinding.pick);
+    }
+
+    private void holdPage(boolean hold) {
+        if (hold && !pickHeld) {
+            pickHeld = true;
+            PickSilence.enter();
+        } else if (!hold && pickHeld) {
+            pickHeld = false;
+            PickSilence.exit();
+        }
+        holdView(mBinding.video, hold);
+        holdView(mBinding.name, hold);
+        holdView(mBinding.detailMeta, hold);
+        holdView(mBinding.director, hold);
+        holdView(mBinding.actor, hold);
+        holdView(mBinding.row2, hold);
+        ViewGroup column = (ViewGroup) mBinding.pick.getRoot().getParent();
+        for (int i = 0; i < column.getChildCount(); i++) {
+            View child = column.getChildAt(i);
+            if (child != mBinding.pick.getRoot()) holdView(child, hold);
+        }
+    }
+
+    private void holdView(View view, boolean hold) {
+        if (hold) {
+            if (view.getVisibility() == View.GONE) return;
+            view.setTag(R.id.pick_hold, view.getVisibility());
+            view.setVisibility(View.GONE);
+            return;
+        }
+        Object held = view.getTag(R.id.pick_hold);
+        if (held instanceof Integer visibility) {
+            view.setTag(R.id.pick_hold, null);
+            view.setVisibility(visibility);
+        }
     }
 
     @Override
@@ -819,11 +918,128 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     private void checkCast() {
         if (isCast() && !isFullscreen()) enterFullscreen();
-        else mBinding.progressLayout.showProgress();
+        else if (!pickHeld) mBinding.progressLayout.showContent();
+    }
+
+    private int pickToken;
+    private boolean openingTold;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (openingTold || getName().isEmpty()) return;
+        openingTold = true;
+        Notify.showAlways(getString(R.string.pick_opening_title, getName()));
     }
 
     private void checkId() {
+        if (getIntent().getBooleanExtra("pickBest", false)) {
+            startPick();
+            return;
+        }
         mVod.checkId();
+    }
+
+    private int rankedCount;
+    private boolean rankedChosen;
+    private boolean pickSettled;
+    private RankedLine playingRanked;
+    private List<RankedLine> rankedLines = List.of();
+
+    private void startPick() {
+        int token = ++pickToken;
+        rankedCount = 0;
+        rankedChosen = false;
+        pickSettled = false;
+        playingRanked = null;
+        rankedLines = List.of();
+        PickSilence.muteToast();
+        BestSourceOpener.abort();
+        PickProgress.begin(mBinding.pick);
+        renderPickProgress(PickStatus.search(0, 1, 0));
+        RankedLine clicked = clickedLine();
+        if (clicked != null) showRanked(List.of(clicked));
+        BestSourceOpener.find(getName(), status -> {
+            if (token != pickToken || isFinishing()) return;
+            renderPickProgress(status);
+        }, (lines, done) -> {
+            if (token != pickToken || isFinishing()) return;
+            if (acceptRanked(lines)) {
+                rankedCount = lines.size();
+                showRanked(lines);
+            }
+            if (!done) return;
+            finishPickMeasure();
+            if (rankedLines.isEmpty()) PickProgress.empty(mBinding.pick);
+        });
+    }
+
+    private RankedLine clickedLine() {
+        if (getKey().isEmpty() || getId().isEmpty()) return null;
+        return new RankedLine(getKey(), VodConfig.get().getSite(getKey()).getName(), getId(), getName(), getPic(), null, null, null, null);
+    }
+
+    private boolean acceptRanked(List<RankedLine> lines) {
+        if (lines == null || lines.isEmpty()) return false;
+        boolean incomingScored = lines.get(0).probed();
+        boolean currentScored = !rankedLines.isEmpty() && rankedLines.get(0).probed();
+        return (incomingScored && !currentScored) || lines.size() >= Math.max(rankedCount, rankedLines.size());
+    }
+
+    @Override
+    public void showRanked(List<RankedLine> lines) {
+        rankedLines = lines == null ? List.of() : lines;
+        if (rankedChosen) return;
+        holdPage(true);
+        PickProgress.showList(mBinding.pick, getName(), rankedLines, this::openRanked);
+    }
+
+    private boolean backToRanked() {
+        if (rankedLines.isEmpty() || pickHeld || isFullscreen()) return false;
+        rankedChosen = false;
+        saveHistory(false);
+        onPaused();
+        showRanked(rankedLines);
+        PickProgress.complete(mBinding.pick);
+        return true;
+    }
+
+    private void openRanked(RankedLine line) {
+        BestSourceOpener.abort();
+        rankedChosen = true;
+        playingRanked = line;
+        mBinding.pick.pickMessage.setText(getString(R.string.pick_opening_title, line.vodName.isEmpty() ? getName() : line.vodName));
+        if (line.probed() && line.siteKey.equals(getKey()) && line.vodId.equals(getId())) {
+            hidePickProgress();
+            mVod.playRanked(line);
+            return;
+        }
+        Intent intent = getIntent();
+        intent.putExtra("pickBest", false);
+        intent.putExtra("key", line.siteKey);
+        intent.putExtra("id", line.vodId);
+        if (!line.vodName.isEmpty()) intent.putExtra("name", line.vodName);
+        putPic(intent, line.pic);
+        renderFallbackName(getName());
+        mVod.reset();
+        mVod.arm(line);
+        mVod.checkId();
+    }
+
+    @Override
+    public boolean showManualPick(List<Flag> flags) {
+        if (!flags.isEmpty()) {
+            hidePickProgress();
+            renderFlags(flags);
+            return true;
+        }
+        App.post(this::openManualSearch, 700);
+        return false;
+    }
+
+    private void openManualSearch() {
+        CollectActivity.start(this, getName());
+        finish();
     }
 
     private void showEmpty() {
@@ -832,13 +1048,27 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     private void setText(Vod item) {
         mBinding.content.setTag(item.getContent());
-        setText(mBinding.year, R.string.detail_year, item.getYear());
-        setText(mBinding.area, R.string.detail_area, item.getArea());
-        setText(mBinding.type, R.string.detail_type, item.getTypeName());
-        setText(mBinding.site, R.string.detail_site, getSite().getName());
         setText(mBinding.director, R.string.detail_director, item.getDirector());
         setText(mBinding.actor, R.string.detail_actor, item.getActor());
-        setText(mBinding.remark, 0, item.getRemarks());
+        MetaTags.fill(mBinding.detailMeta, item.getYear(), VodScores.caption(item.getRemarks()), item.getArea(), item.getTypeName(), getSite().getName());
+        renderDouban(item);
+    }
+
+    private void renderDouban(Vod item) {
+        mBinding.douban.detailSkeleton.setVisibility(View.GONE);
+        mBinding.douban.detailScoreCard.setVisibility(View.GONE);
+        mBinding.detailStars.setVisibility(View.GONE);
+        mBinding.detailPoster.setVisibility(View.GONE);
+        mBinding.detailScoreBadge.setVisibility(View.GONE);
+        VodScores.bindInline(mBinding.detailScoreSmall, item);
+        DoubanDetail.renderCast(this, mBinding.castBox.castRow, item);
+        int castVisible = mBinding.castBox.castRow.getChildCount() == 0 ? View.GONE : View.VISIBLE;
+        mBinding.castBox.castScroll.setVisibility(castVisible);
+        mBinding.castBox.castTitle.setVisibility(castVisible);
+        if (castVisible == View.VISIBLE) {
+            mBinding.director.setVisibility(View.GONE);
+            mBinding.actor.setVisibility(View.GONE);
+        }
     }
 
     private void setText(TextView view, int resId, String text) {
@@ -1264,7 +1494,10 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private void checkKeepImg() {
-        mBinding.keep.setCompoundDrawablesWithIntrinsicBounds(Keep.find(getHistoryKey()) == null ? R.drawable.ic_detail_keep_off : R.drawable.ic_detail_keep_on, 0, 0, 0);
+        boolean kept = Keep.find(getHistoryKey()) != null;
+        mBinding.keep.setCompoundDrawablesWithIntrinsicBounds(kept ? R.drawable.ic_detail_keep_on : R.drawable.ic_detail_keep_off, 0, 0, 0);
+        mBinding.keep.setText(kept ? R.string.keep_done : R.string.keep);
+        mBinding.keep.setTextColor(kept ? androidx.core.content.ContextCompat.getColor(this, R.color.netflix_red) : Color.WHITE);
     }
 
     private void createKeep() {
@@ -1376,7 +1609,40 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     @Override
     protected void onError(String msg) {
+        if (returnToRankedAfterFailure(msg)) return;
         mVod.playbackError(msg);
+    }
+
+    private boolean returnToRankedAfterFailure(String msg) {
+        if (playingRanked == null || rankedLines.isEmpty()) return false;
+        RankedLine failed = playingRanked;
+        playingRanked = null;
+        List<RankedLine> left = new java.util.ArrayList<>();
+        for (RankedLine line : rankedLines) if (!sameRanked(line, failed)) left.add(line);
+        rankedLines = left;
+        rankedCount = left.size();
+        rankedChosen = false;
+        pickSettled = true;
+        onPaused();
+        if (left.isEmpty()) {
+            showError(msg);
+            return true;
+        }
+        if (msg != null && !msg.isEmpty()) Notify.showAlways(msg);
+        showRanked(left);
+        PickProgress.complete(mBinding.pick);
+        return true;
+    }
+
+    @Override
+    public boolean onRankedDetailMiss(String msg) {
+        return returnToRankedAfterFailure(msg == null || msg.isEmpty() ? getString(R.string.error_detail) : msg);
+    }
+
+    private boolean sameRanked(RankedLine line, RankedLine failed) {
+        if (!line.siteKey.equals(failed.siteKey) || !line.vodId.equals(failed.vodId)) return false;
+        if (line.flag == null || failed.flag == null || line.episode == null || failed.episode == null) return true;
+        return line.flag.getFlag().equals(failed.flag.getFlag()) && line.episode.getUrl().equals(failed.episode.getUrl());
     }
 
     @Override
@@ -1452,6 +1718,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     @Override
     protected void onPlayingChanged(boolean isPlaying) {
         mVod.onPlayingChanged(isPlaying && isPlayerPlaying());
+        mBinding.visualizer.setPlaying(isPlaying && isPlayerPlaying());
         if (isDiscMenuActive()) {
             hideInfo();
         } else if (isPlaying) {
@@ -1711,6 +1978,8 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     protected void onBackInvoked() {
         if (handleWebViewNavigation()) {
             return;
+        } else if (isFullscreen()) {
+            exitFullscreen();
         } else if (isVisible(mBinding.control.getRoot())) {
             hideControl();
         } else if (handleDiscMenuBack()) {
@@ -1718,8 +1987,8 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         } else if (isVisible(mBinding.widget.center)) {
             mInput.cancelSeek();
             hideCenter();
-        } else if (isFullscreen()) {
-            exitFullscreen();
+        } else if (backToRanked()) {
+            return;
         } else {
             mViewModel.stopSearch();
             if (isTaskRoot()) startActivity(new Intent(this, HomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
@@ -1729,6 +1998,9 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
 
     @Override
     protected void onDestroy() {
+        BestSourceOpener.abort();
+        PickSilence.unmuteToast();
+        holdPage(false);
         mInput.cancelSeek();
         mClock.release();
         saveHistory(true);

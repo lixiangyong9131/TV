@@ -24,6 +24,7 @@ abstract class VerifyMpvNativeTask extends DefaultTask {
 
     @TaskAction
     void verifyNativeLibraries() {
+        if (project.hasProperty("skipMpvNativeCheck")) return
         for (def abi : abis.get()) MpvNativeLibraries.hostLibraries(mpvArchive.get().asFile, ffmpegArchive.get().asFile, abi)
     }
 }

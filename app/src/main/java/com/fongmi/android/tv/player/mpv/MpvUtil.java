@@ -100,8 +100,7 @@ public final class MpvUtil {
 
     static MpvPlayer buildPlayer(Player.Listener listener, MpvPlayerConfig config) {
         MpvDecoderMode mode = MpvDecoderMode.fromCommonDecoderMode(DecodeSetting.getDecoderMode(PlayerSetting.ENGINE_MPV, C.TRACK_TYPE_VIDEO));
-        MpvPlayer player = new MpvPlayer.Builder(App.get()).setVideoDecoderMode(mode).setConfig(config).build();
-        player.setSubtitleContentLoader(new SubtitleFileContent());
+        MpvPlayer player = new MpvPlayer.Builder(App.get()).setConfig(config).build();
         setPreferredTextLanguages(player);
         player.addListener(listener);
         return player;
@@ -139,7 +138,7 @@ public final class MpvUtil {
         File cacheDir = Path.mpvCache();
         File defaultFontsDirectory = ExternalFont.getDirectory();
         AndroidFontConfig.prepare();
-        MpvPlayerConfig.Builder builder = new MpvPlayerConfig.Builder().setDataSourceFactory(createDataSourceFactory()).setDefaultFontDirectories(defaultFontsDirectory, defaultFontsDirectory).addConfigDirectory(Path.mpv());
+        MpvPlayerConfig.Builder builder = new MpvPlayerConfig.Builder().addConfigDirectory(Path.mpv());
         addAndroidOptions(builder, cacheDir, videoOptions);
         builder.addPreInitStringOption("proxy-url", "http://127.0.0.1:" + Proxy.getPort() + "/proxy?");
         builder.addTlsCaFileFromAsset(App.get(), ASSET_CA_FILE, Path.files(ASSET_CA_FILE)).addAndroidSubtitleOptions(App.get(), buildSubtitleOptions(font));
@@ -167,7 +166,7 @@ public final class MpvUtil {
         MpvAndroidOptions.Builder options = new MpvAndroidOptions.Builder().setShaderCacheDirectory(shaderCacheDirectory).setAudioPassthroughEnabled(DecodeSetting.isAudioPassThrough()).setDolbyVisionOutputPolicy(DecodeSetting.getDolbyVisionOutputPolicy());
         options.setGpuNextEnabled(videoOptions.gpuNext());
         options.setVulkanEnabled(videoOptions.vulkan());
-        config.addAndroidDefaults(options.build()).setMotionInterpolationFps(videoOptions.motionFps());
+        config.addAndroidDefaults(options.build());
     }
 
     record VideoOptions(int motionFps, boolean gpuNext, boolean vulkan) {
@@ -183,20 +182,8 @@ public final class MpvUtil {
 
     static MpvSubtitleOptions buildSubtitleOptions(@Nullable ExternalFont.Item font) {
         MpvSubtitleOptions.Builder builder = new MpvSubtitleOptions.Builder();
-        if (font != null) builder.setFontsDirectory(font.directory().getAbsolutePath());
         builder.setPosition(100.0);
-        builder.setVerticalOffset(SubtitleSetting.getPosition());
         builder.setScale(SubtitleSetting.getAppliedScale());
-        builder.setBitmapSubtitleBrightness(SubtitleSetting.getBitmapBrightness());
-        builder.setSecondarySubtitlePosition(100.0);
-        builder.setSecondaryVerticalOffset(100.0 - SubtitleSetting.getSecondaryPosition());
-        builder.setSecondaryAssStyleOverride(SubtitleSetting.isStyleForced());
-        if (font != null) builder.setFontFamily(font.familyName());
-        setCaptionStyle(builder);
-        return builder.build();
-    }
-
-    private static void setCaptionStyle(MpvSubtitleOptions.Builder builder) {
         if (SubtitleSetting.isCustomStyle()) {
             builder.setCustomStyle(
                     SubtitleSetting.getTextColor(),
@@ -207,9 +194,7 @@ public final class MpvUtil {
                     SubtitleSetting.getShadow());
         } else if (SubtitleSetting.isSystemStyle()) {
             builder.setSystemCaptionStyle();
-        } else {
-            CaptionStyleCompat style = SubtitleSetting.getStyle();
-            builder.setDefaultStyle(style.foregroundColor, style.backgroundColor, style.edgeType, style.edgeColor, style.edgeWidth, style.shadowOffset);
         }
+        return builder.build();
     }
 }

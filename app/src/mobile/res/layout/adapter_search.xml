@@ -6,14 +6,34 @@
     android:layout_height="128dp"
     android:layout_margin="8dp"
     android:background="@drawable/shape_vod_list"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:foreground="@drawable/shape_vod">
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/image"
+    <FrameLayout
+        android:id="@+id/posterBox"
         android:layout_width="96dp"
         android:layout_height="match_parent"
-        android:background="@color/black_10"
-        app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black_10"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/score"
+            style="@style/ScoreBadge"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            tools:text="8.7"
+            tools:visibility="visible" />
+    </FrameLayout>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/site"
@@ -32,7 +52,7 @@
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_toEndOf="@+id/image"
+        android:layout_toEndOf="@+id/posterBox"
         android:orientation="vertical"
         android:padding="8dp">
 

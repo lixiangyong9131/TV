@@ -87,14 +87,30 @@ public final class SpiderDialog implements LifecycleEventObserver {
         return show(options, null);
     }
 
+    private static SpiderDialog current;
+
+    public static void dismissOpen() {
+        SpiderDialog open = current;
+        if (open != null && open.dialog != null) open.dialog.dismiss();
+    }
+
     public static CompletableFuture<String> show(String options, Function<String, CompletableFuture<String>> callback) {
         SpiderDialog request = new SpiderDialog(callback);
         CompletableFuture<String> completion = request.result.whenCompleteAsync((value, error) -> request.close(), App::post);
         completion.whenComplete((value, error) -> {
             if (completion.isCancelled()) request.cancel();
         });
+        if (com.fongmi.android.tv.playback.vod.PickSilence.active() || panLogin(options)) {
+            request.result.complete(null);
+            return completion;
+        }
         App.post(() -> request.showDialog(options));
         return completion;
+    }
+
+    private static boolean panLogin(String options) {
+        if (options == null) return false;
+        return options.contains("网盘") || options.contains("網盤") || options.toLowerCase(java.util.Locale.ROOT).contains("cookie") || options.contains("扫码") || options.contains("掃碼") || options.contains("夸克") || options.contains("百度") || options.contains("阿里");
     }
 
     private SpiderDialog(Function<String, CompletableFuture<String>> callback) {
@@ -104,8 +120,8 @@ public final class SpiderDialog implements LifecycleEventObserver {
     private void showDialog(String options) {
         if (result.isDone()) return;
         try {
-            Activity current = Runtime.activity();
-            if (!(current instanceof FragmentActivity owner)) throw new IllegalStateException("No Activity available for dialog");
+            Activity host = Runtime.activity();
+            if (!(host instanceof FragmentActivity owner)) throw new IllegalStateException("No Activity available for dialog");
             activity = owner;
             JSONObject json = new JSONObject(options);
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity).setTitle(json.optString("title"));
@@ -115,7 +131,10 @@ public final class SpiderDialog implements LifecycleEventObserver {
             dialog.setCancelable(flag(json, "cancelable", true));
             dialog.setOnDismissListener(this::onDismiss);
             activity.getLifecycle().addObserver(this);
-            if (!result.isDone()) showDialog();
+            if (!result.isDone()) {
+                current = this;
+                showDialog();
+            }
         } catch (JSONException | RuntimeException error) {
             result.completeExceptionally(error);
         }
@@ -633,6 +652,7 @@ public final class SpiderDialog implements LifecycleEventObserver {
     }
 
     private void close() {
+        if (current == this) current = null;
         if (action != null) action.cancel(true);
         closePicker();
         if (images != null) images.clear(image);

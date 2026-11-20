@@ -187,6 +187,11 @@ public class SiteApi {
     }
 
     @NonNull
+    public static Result peekPlayerContent(@NonNull String key, @NonNull String flag, @NonNull String id, boolean builtin) throws Exception {
+        return loadPlayerContent(key, flag, id, builtin);
+    }
+
+    @NonNull
     public static Result resolvePlayerContent(@NonNull String key, @NonNull String id, @NonNull Result result) throws Exception {
         result.setUrl(Source.get().fetch(result, id));
         String originalId = SourceUrl.original(id);

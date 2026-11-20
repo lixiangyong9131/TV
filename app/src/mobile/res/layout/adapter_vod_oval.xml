@@ -4,27 +4,49 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp">
+    android:layout_margin="8dp"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:defaultFocusHighlightEnabled="false"
+    android:focusable="false"
+    android:stateListAnimator="@animator/netflix_card">
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/image"
+    <FrameLayout
+        android:id="@+id/posterBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:background="@color/black_20"
-        android:foreground="@drawable/shape_vod_oval"
-        app:shapeAppearanceOverlay="@style/Vod.Circle" />
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/black_20"
+            android:foreground="@drawable/shape_vod_oval"
+            app:shapeAppearanceOverlay="@style/Vod.Circle" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/score"
+            style="@style/ScoreBadge"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            tools:text="8.7"
+            tools:visibility="visible" />
+    </FrameLayout>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/image"
-        android:layout_alignStart="@+id/image"
-        android:layout_alignEnd="@+id/image"
+        android:layout_below="@+id/posterBox"
+        android:layout_alignStart="@+id/posterBox"
+        android:layout_alignEnd="@+id/posterBox"
         android:gravity="center"
         android:singleLine="true"
-        android:textColor="@color/white"
+        android:textColor="@color/ink"
         android:textSize="14sp"
         tools:text="蜘蛛人" />
 

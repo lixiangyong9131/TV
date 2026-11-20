@@ -107,6 +107,8 @@ public interface VodPlaybackHost {
 
     void renderFlags(List<Flag> items);
 
+    void renderQualitySwitch(boolean visible);
+
     void renderEpisodes(List<Episode> items);
 
     void renderFlagSelection(Flag item);
@@ -140,6 +142,26 @@ public interface VodPlaybackHost {
     void onSearchResult();
 
     void showDetailMessage(String msg);
+
+    default void renderPickProgress(PickStatus status) {
+    }
+
+    default boolean showManualPick(List<Flag> flags) {
+        return false;
+    }
+
+    default void hidePickProgress() {
+    }
+
+    default void showRanked(java.util.List<RankedLine> lines) {
+    }
+
+    default boolean onRankedDetailMiss(String msg) {
+        return false;
+    }
+
+    default void finishPickMeasure() {
+    }
 
     void showSwitchLine(Flag flag);
 

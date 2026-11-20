@@ -1,16 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/text"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="6dp"
-    android:background="@drawable/shape_accent"
-    android:ellipsize="marquee"
-    android:focusable="true"
-    android:gravity="center"
-    android:padding="8dp"
-    android:singleLine="true"
-    android:textColor="@color/selector_control"
-    android:textSize="14sp"
-    tools:text="20" />
+    android:layout_height="44dp"
+    android:layout_margin="4dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_episode"
+        android:ellipsize="none"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:textColor="@color/selector_episode_text"
+        android:textSize="12sp"
+        app:autoSizeMaxTextSize="12sp"
+        app:autoSizeMinTextSize="9sp"
+        app:autoSizeStepGranularity="1sp"
+        app:autoSizeTextType="uniform"
+        tools:text="第一集" />
+
+    <View
+        android:id="@+id/watched"
+        android:layout_width="16dp"
+        android:layout_height="2dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="4dp"
+        android:background="@color/netflix_red"
+        android:visibility="gone"
+        tools:visibility="visible" />
+</FrameLayout>

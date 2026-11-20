@@ -3,7 +3,6 @@ package com.fongmi.android.tv.player.exo;
 import androidx.annotation.NonNull;
 import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
-import androidx.media3.common.util.LocalClearKeyLicense;
 import androidx.media3.database.StandaloneDatabaseProvider;
 import androidx.media3.datasource.DataSource;
 import androidx.media3.datasource.DefaultDataSource;
@@ -27,7 +26,6 @@ import androidx.media3.exoplayer.text.SubtitleTranscriptSession;
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy;
 import androidx.media3.extractor.DefaultExtractorsFactory;
 import androidx.media3.extractor.ExtractorsFactory;
-import androidx.media3.extractor.mkv.MatroskaExtractor;
 import androidx.media3.extractor.text.SubtitleParser;
 import androidx.media3.extractor.ts.TsExtractor;
 
@@ -148,8 +146,7 @@ public class ExoMediaSourceFactory implements MediaSource.Factory {
 
     private MediaSource.Factory createMediaSourceFactory(MediaItem mediaItem) {
         SubtitleTranscript transcript = subtitleTranscriptSession.forMediaItem(mediaItem);
-        ExtractorsFactory extractorsFactory = createDefaultExtractorsFactory().setMp4ClearKeys(
-                LocalClearKeyLicense.parse(mediaItem.localConfiguration.drmConfiguration));
+        ExtractorsFactory extractorsFactory = createDefaultExtractorsFactory();
         SubtitleParser.Factory subtitleParserFactory;
         if (libassPlaybackSession.isAvailable()) {
             LibassPlaybackSession.MediaComponents components = libassPlaybackSession.createMediaComponents(mediaItem, extractorsFactory, transcript);
@@ -162,6 +159,6 @@ public class ExoMediaSourceFactory implements MediaSource.Factory {
     }
 
     static DefaultExtractorsFactory createDefaultExtractorsFactory() {
-        return new DefaultExtractorsFactory().setTsExtractorTimestampSearchBytes(TsExtractor.DEFAULT_TIMESTAMP_SEARCH_BYTES * 10).setMatroskaExtractorFlagsForHttpSources(MatroskaExtractor.FLAG_DEFER_SEEK_FOR_CUES);
+        return new DefaultExtractorsFactory().setTsExtractorTimestampSearchBytes(TsExtractor.DEFAULT_TIMESTAMP_SEARCH_BYTES * 10);
     }
 }

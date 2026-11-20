@@ -3,16 +3,22 @@ package com.fongmi.android.tv.ui.activity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.C;
 import androidx.media3.common.MediaMetadata;
@@ -169,6 +175,8 @@ public class LiveActivity extends PlaybackActivity implements TouchInput.Listene
         mScaleFeedback = new PinchScaleFeedback(mBinding.widget.scale);
         setPadding(mBinding.control.getRoot());
         setPadding(mBinding.recycler, true);
+        applyLiveBackInsets();
+        applyNavBarInsets();
         mHides = new ArrayList<>();
         mR1 = this::hideControl;
         mR2 = this::setTraffic;
@@ -183,7 +191,16 @@ public class LiveActivity extends PlaybackActivity implements TouchInput.Listene
     @Override
     @SuppressLint("ClickableViewAccessibility")
     protected void initEvent() {
+        mBinding.liveBack.setOnClickListener(view -> onBack());
+        mBinding.liveFull.setOnClickListener(view -> onLiveFull());
         mBinding.control.back.setOnClickListener(view -> onBack());
+        mBinding.navigation.setSelectedItemId(R.id.live);
+        mBinding.navigation.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.live) return true;
+            HomeActivity.showTab(this, item.getItemId());
+            finish();
+            return true;
+        });
         mBinding.control.cast.setOnClickListener(view -> onCast());
         mBinding.control.info.setOnClickListener(view -> onInfo());
         mBinding.control.play.setOnClickListener(view -> checkPlay());
@@ -207,6 +224,50 @@ public class LiveActivity extends PlaybackActivity implements TouchInput.Listene
         mBinding.control.action.speed.setOnLongClickListener(view -> onSpeedLong());
         mBinding.control.action.getRoot().setOnTouchListener(this::onActionTouch);
         mBinding.video.setOnTouchListener((view, event) -> mInput.onTouchEvent(event));
+    }
+
+    private void applyLiveBackInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(mBinding.liveBack, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            v.setTranslationY(bars.top);
+            mBinding.liveFull.setTranslationY(bars.top);
+            return insets;
+        });
+    }
+
+    private void applyNavBarInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(mBinding.navigationBar, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+            v.setPadding(0, 0, 0, Math.min(bars.bottom, ResUtil.dp2px(10)));
+            return insets;
+        });
+    }
+
+    private boolean liveImmersive;
+
+    private void onLiveFull() {
+        liveImmersive = !liveImmersive;
+        RelativeLayout.LayoutParams videoLp = (RelativeLayout.LayoutParams) mBinding.video.getLayoutParams();
+        RelativeLayout.LayoutParams recyclerLp = (RelativeLayout.LayoutParams) mBinding.recycler.getLayoutParams();
+        if (liveImmersive) {
+            videoLp.removeRule(RelativeLayout.ABOVE);
+            recyclerLp.removeRule(RelativeLayout.ABOVE);
+            mBinding.navigationBar.setVisibility(View.GONE);
+            mBinding.liveFull.setImageResource(R.drawable.ic_kino_collapse);
+        } else {
+            videoLp.addRule(RelativeLayout.ABOVE, R.id.navigationBar);
+            recyclerLp.addRule(RelativeLayout.ABOVE, R.id.navigationBar);
+            mBinding.navigationBar.setVisibility(View.VISIBLE);
+            mBinding.liveFull.setImageResource(R.drawable.ic_kino_expand);
+        }
+        mBinding.video.setLayoutParams(videoLp);
+        mBinding.recycler.setLayoutParams(recyclerLp);
+    }
+
+    private void setLiveChromeVisible(boolean visible) {
+        mBinding.liveBack.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mBinding.liveFull.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (!liveImmersive) mBinding.navigationBar.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     private void setRecyclerView() {
@@ -369,6 +430,7 @@ public class LiveActivity extends PlaybackActivity implements TouchInput.Listene
         setRequestedOrientation(getLockOrient());
         mInput.setLock(isLock());
         checkLockImg();
+        setLiveChromeVisible(!isLock() && !isInPictureInPictureMode());
         showControl();
     }
 
@@ -927,7 +989,13 @@ public class LiveActivity extends PlaybackActivity implements TouchInput.Listene
     }
 
     private void updatePlayControl(boolean isPlaying) {
-        mBinding.control.play.setImageResource(isPlaying ? androidx.media3.ui.R.drawable.exo_icon_pause : androidx.media3.ui.R.drawable.exo_icon_play);
+        if (isPlaying) {
+            mBinding.control.play.setImageResource(androidx.media3.ui.R.drawable.exo_icon_pause);
+            mBinding.control.play.setImageTintList(ColorStateList.valueOf(Color.WHITE));
+        } else {
+            mBinding.control.play.setImageResource(R.drawable.ic_kino_play);
+            mBinding.control.play.setImageTintList(null);
+        }
         mPiP.update(this, isPlaying);
     }
 
@@ -1188,8 +1256,10 @@ public class LiveActivity extends PlaybackActivity implements TouchInput.Listene
             hideControl();
             hideInfo();
             hideUI();
+            setLiveChromeVisible(false);
         } else {
             hideInfo();
+            setLiveChromeVisible(!isLock());
             if (isStop()) finish();
         }
     }

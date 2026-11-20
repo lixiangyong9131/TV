@@ -25,6 +25,27 @@
     <color name="white_70">#B3FFFFFF</color>
     <color name="white_80">#CCFFFFFF</color>
     <color name="white_90">#E6FFFFFF</color>
-    <color name="splash_background">#141218</color>
+    <color name="splash_background">#08080B</color>
+    <color name="kino_ink">#08080B</color>
+    <color name="netflix_red">#E50914</color>
+    <color name="player_red">#DB0000</color>
+    <color name="netflix_card">#181818</color>
+    <color name="paper">#000000</color>
+    <color name="ink">#FFFFFF</color>
+    <color name="muted">#B3B3B3</color>
+    <color name="pill">#333333</color>
+    <color name="bone">#2A2A2A</color>
+    <color name="card">#181818</color>
+    <color name="douban_bg">#161622</color>
+    <color name="douban_card">#2A2B3C</color>
+    <color name="douban_bone">#343548</color>
+    <color name="douban_star">#FFB23E</color>
+    <color name="pick_accent">#E50914</color>
+    <color name="pick_paper">#000000</color>
+    <color name="pick_line">#2A2A2A</color>
+    <color name="pick_rank_1">#FF6A00</color>
+    <color name="pick_rank_2">#FF8F1F</color>
+    <color name="pick_rank_3">#E6A23C</color>
+    <color name="douban_meta">#9B9BB0</color>
 
 </resources>

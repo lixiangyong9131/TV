@@ -141,7 +141,7 @@ public class PlayerSetting {
     }
 
     public static int getBuffer() {
-        return Math.clamp(Prefers.getInt("buffer"), MIN_BUFFER, MAX_BUFFER);
+        return Math.clamp(Prefers.getInt("buffer", 2), MIN_BUFFER, MAX_BUFFER);
     }
 
     public static void putBuffer(int buffer) {

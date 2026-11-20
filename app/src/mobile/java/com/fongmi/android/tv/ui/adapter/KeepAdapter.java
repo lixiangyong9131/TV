@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fongmi.android.tv.bean.Keep;
 import com.fongmi.android.tv.databinding.AdapterVodBinding;
 import com.fongmi.android.tv.utils.ImgUtil;
+import com.fongmi.android.tv.utils.VodScores;
 
 public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
 
@@ -69,6 +70,7 @@ public class KeepAdapter extends BaseDiffAdapter<Keep, KeepAdapter.ViewHolder> {
         holder.binding.site.setText(item.getSiteName());
         holder.binding.progress.setVisibility(View.GONE);
         holder.binding.delete.setVisibility(!delete ? View.GONE : View.VISIBLE);
+        VodScores.bind(holder.binding.score, item.getVodName());
         ImgUtil.load(item.getVodName(), item.getVodPic(), holder.binding.image);
         setClickListener(holder.binding.getRoot(), item);
     }

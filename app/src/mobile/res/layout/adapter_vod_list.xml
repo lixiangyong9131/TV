@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     android:background="@drawable/shape_vod_list"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:defaultFocusHighlightEnabled="false"
+    android:focusable="false"
     android:foreground="@drawable/shape_vod"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="12dp">
+    android:padding="12dp"
+    android:stateListAnimator="@animator/netflix_card">
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/image"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+    <FrameLayout
+        android:layout_width="56dp"
+        android:layout_height="78dp"
         android:layout_marginEnd="12dp"
-        app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/score"
+            style="@style/ScoreBadge"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            tools:text="8.7"
+            tools:visibility="visible" />
+    </FrameLayout>
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
@@ -26,10 +48,10 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/name"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:textColor="@color/white"
+            android:textColor="@color/ink"
             android:textSize="14sp"
             tools:text="蜘蛛人" />
 
@@ -39,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:singleLine="true"
-            android:textColor="@color/white"
+            android:textColor="@color/ink"
             android:textSize="12sp"
             tools:text="1080p" />
 

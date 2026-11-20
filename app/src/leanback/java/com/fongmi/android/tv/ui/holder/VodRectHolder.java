@@ -1,5 +1,7 @@
 package com.fongmi.android.tv.ui.holder;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
@@ -8,6 +10,7 @@ import com.fongmi.android.tv.databinding.AdapterVodRectBinding;
 import com.fongmi.android.tv.ui.base.BaseVodHolder;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ImgUtil;
+import com.fongmi.android.tv.utils.VodScores;
 
 public class VodRectHolder extends BaseVodHolder {
 
@@ -31,14 +34,14 @@ public class VodRectHolder extends BaseVodHolder {
         binding.name.setText(item.getName());
         binding.year.setText(item.getYear());
         binding.site.setText(item.getSiteName());
-        binding.remark.setText(item.getRemarks());
+        VodScores.bind(binding.score, item);
+        VodScores.bindRemark(binding.remark, item.getRemarks());
         binding.site.setVisibility(item.getSiteVisible());
         binding.year.setVisibility(item.getYearVisible());
         binding.name.setVisibility(item.getNameVisible());
-        binding.remark.setVisibility(item.getRemarkVisible());
-        binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
+        binding.getRoot().setOnClickListener(v -> listener.onItemClick(item, binding.image));
         binding.getRoot().setOnLongClickListener(v -> listener.onLongClick(item));
-        ImgUtil.load(item.getName(), item.getPic(), binding.image);
+        ImgUtil.load(item.getName(), item.getPic(), item.getDoubanPic(), binding.image);
     }
 
     @Override

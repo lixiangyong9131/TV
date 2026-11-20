@@ -19,8 +19,8 @@ android {
         applicationId "com.fongmi.android.tv"
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
-        versionCode 588
-        versionName "5.8.8"
+        versionCode 590
+        versionName "5.9.0"
         manifestPlaceholders.runtimeCatalog = providers.gradleProperty('tvRuntimeCatalog').getOrElse('https://github.com/FongMi/Release/releases/download/module/catalog.json')
         javaCompileOptions {
             annotationProcessorOptions {
@@ -94,6 +94,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
     }
+}
+
+tasks.withType(org.gradle.api.tasks.compile.JavaCompile).configureEach {
+    options.compilerArgs.addAll(["-Xmaxerrs", "5000", "-Xmaxwarns", "5000"])
 }
 
 AbiApkPackaging.configure(project, SingleArtifact.APK.INSTANCE)

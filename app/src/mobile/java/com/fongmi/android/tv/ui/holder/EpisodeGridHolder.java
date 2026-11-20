@@ -20,8 +20,11 @@ public class EpisodeGridHolder extends BaseEpisodeHolder {
 
     @Override
     public void initView(Episode item) {
+        EpisodeAdapter adapter = getBindingAdapter() instanceof EpisodeAdapter a ? a : null;
+        boolean watched = adapter != null && adapter.isWatched(getBindingAdapterPosition());
         binding.text.setSelected(item.isSelected());
-        binding.text.setText(item.getDesc().concat(item.getName()));
+        binding.text.setText(item.getLabel());
+        binding.watched.setVisibility(!item.isSelected() && watched ? android.view.View.VISIBLE : android.view.View.GONE);
         binding.text.setOnClickListener(v -> listener.onItemClick(item));
     }
 }

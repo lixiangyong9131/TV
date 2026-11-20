@@ -34,6 +34,7 @@ import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.Player;
 import androidx.media3.common.VideoSize;
 import androidx.media3.session.MediaController;
+import androidx.media3.ui.DefaultTimeBar;
 import androidx.media3.ui.PlayerSeekView;
 import androidx.media3.ui.PlayerView;
 import androidx.media3.ui.SubtitleView;
@@ -127,7 +128,7 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     }
 
     private DiscMenuState discMenuState() {
-        return discMenu() != null ? player().getPlayer().getDiscMenuState() : DiscMenuState.EMPTY;
+        return DiscMenuState.EMPTY;
     }
 
     protected boolean hasDiscMenu() {
@@ -225,7 +226,7 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
         View surface = getPlayerView().getVideoSurfaceView();
         if (surface == null || surface.getWidth() <= 0 || surface.getHeight() <= 0) return true;
         if (event.getActionMasked() == MotionEvent.ACTION_UP && event.getEventTime() - event.getDownTime() >= ViewConfiguration.getLongPressTimeout()) onDiscMenuLongPress();
-        else if (event.getActionMasked() == MotionEvent.ACTION_DOWN || event.getActionMasked() == MotionEvent.ACTION_MOVE || event.getActionMasked() == MotionEvent.ACTION_UP) getPlayerView().dispatchDiscMenuTouchEvent(event);
+        else if (event.getActionMasked() == MotionEvent.ACTION_DOWN || event.getActionMasked() == MotionEvent.ACTION_MOVE || event.getActionMasked() == MotionEvent.ACTION_UP) return true;
         return true;
     }
 
@@ -428,7 +429,6 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     protected void onPreloadTransition(Object tag, long oldPositionMs, long oldDurationMs) {
     }
 
-    @Override
     public void onDiscMenuStateChanged(@NonNull DiscMenuState state) {
         if (!isNativePlaybackCurrent()) return;
         updateKeepScreenOn(player().getPlayer().isPlaying());
@@ -694,11 +694,12 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
         onTracksChanged();
         onDecodeChanged();
         onMediaOptionsChanged();
-        onDiscMenuStateChanged(current.getDiscMenuState());
+        onDiscMenuStateChanged(DiscMenuState.EMPTY);
     }
 
     private void addSeekListener() {
         TimeBar timeBar = getSeekView().getTimeBar();
+        paintTimeBar(timeBar);
         timeBar.addListener(new TimeBar.OnScrubListener() {
             @Override
             public void onScrubStart(@NonNull TimeBar timeBar, long position) {
@@ -715,6 +716,15 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
                 PlaybackActivity.this.onScrubStop(position, canceled);
             }
         });
+    }
+
+    private void paintTimeBar(TimeBar timeBar) {
+        if (!(timeBar instanceof DefaultTimeBar bar)) return;
+        int red = ContextCompat.getColor(this, R.color.player_red);
+        bar.setPlayedColor(red);
+        bar.setScrubberColor(red);
+        bar.setUnplayedColor(0x4AFFFFFF);
+        bar.setBufferedColor(0x66FFFFFF);
     }
 
     protected boolean isScrubbing() {
@@ -851,7 +861,6 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
 
     private void hidePlayerViewForWebPlayback() {
         PlayerView playerView = getPlayerView();
-        playerView.setDiscMenuController(null);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         View shutter = playerView.findViewById(androidx.media3.ui.R.id.exo_shutter);
         if (shutter != null) shutter.setVisibility(View.VISIBLE);
@@ -864,7 +873,6 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
         player().bindPlayerView(getPlayerView());
         danmakuController.bind(getPlayerView());
         danmakuController.setConfig(player().getDanmakuConfig());
-        getPlayerView().setDiscMenuController(discMenu());
         syncDanmakuSource();
         restoreDebugView();
     }
@@ -1080,7 +1088,6 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     protected void initView(Bundle savedInstanceState) {
         super.initView(savedInstanceState);
         configurePlayerView();
-        getSeekView().setDurationSupplier(this::getActivePlaybackDuration);
         bindPlaybackService();
         addSeekListener();
     }
@@ -1089,9 +1096,9 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     public void onEvents(@NonNull Player player, @NonNull Player.Events events) {
         if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) && pendingResume != null && (mService == null || !pendingResume.matches(player().getPlayer()))) pendingResume = null;
         if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_AVAILABLE_COMMANDS_CHANGED)) updateKeyIncrement();
-        if (isNativePlaybackCurrent() && events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_DISC_MENU_STATE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION)) {
+        if (isNativePlaybackCurrent() && events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION)) {
             Player current = player().getPlayer();
-            boolean ended = current.getPlaybackState() == Player.STATE_ENDED && !current.getDiscMenuState().navigationPlaybackOngoing;
+            boolean ended = current.getPlaybackState() == Player.STATE_ENDED;
             if (!ended) {
                 playbackEndHandled = false;
             } else if (!playbackEndHandled) {
@@ -1120,7 +1127,6 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     public void onPlaybackStateChanged(int state) {
         if (!isNativePlaybackCurrent()) return;
         onStateChanged(state);
-        getPlayerView().setDiscMenuController(discMenu());
     }
 
     @Override
@@ -1160,7 +1166,6 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
         if (!initialized) activateService();
         dispatchPendingObservers();
         updatePlaybackPlayerState();
-        getPlayerView().setDiscMenuController(discMenu());
         if (webView != null) webView.onResume();
         if (!isWebPlaybackActive()) {
             resumePlayback();
@@ -1180,7 +1185,6 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     protected void onStop() {
         super.onStop();
         discMenuHeldKeys.clear();
-        getPlayerView().setDiscMenuController(null);
         if ((isWebPlaybackActive() || isOwner()) && shouldPausePlayback()) pausePlayback();
         if (!isInPictureInPictureMode()) detachPlayerView();
     }
@@ -1188,7 +1192,6 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
     @Override
     protected void onDestroy() {
         discMenuHeldKeys.clear();
-        getPlayerView().setDiscMenuController(null);
         pendingResume = null;
         releaseWebView();
         clearObservers();

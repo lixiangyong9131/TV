@@ -1,5 +1,7 @@
 package com.fongmi.android.tv.ui.holder;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
@@ -8,6 +10,7 @@ import com.fongmi.android.tv.databinding.AdapterVodOvalBinding;
 import com.fongmi.android.tv.ui.base.BaseVodHolder;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ImgUtil;
+import com.fongmi.android.tv.utils.VodScores;
 
 public class VodOvalHolder extends BaseVodHolder {
 
@@ -30,9 +33,10 @@ public class VodOvalHolder extends BaseVodHolder {
     public void initView(Vod item) {
         binding.name.setText(item.getName());
         binding.name.setVisibility(item.getNameVisible());
-        binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
+        VodScores.bind(binding.score, item);
+        binding.getRoot().setOnClickListener(v -> listener.onItemClick(item, binding.image));
         binding.getRoot().setOnLongClickListener(v -> listener.onLongClick(item));
-        ImgUtil.load(item.getName(), item.getPic(), binding.image);
+        ImgUtil.load(item.getName(), item.getPic(), item.getDoubanPic(), binding.image);
     }
 
     @Override

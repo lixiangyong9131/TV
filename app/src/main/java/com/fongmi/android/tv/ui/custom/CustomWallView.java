@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import com.fongmi.android.tv.databinding.ViewWallBinding;
 import com.fongmi.android.tv.event.ConfigEvent;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.setting.Setting;
+import com.fongmi.android.tv.utils.Util;
 import com.github.catvod.utils.Path;
 
 import org.greenrobot.eventbus.EventBus;
@@ -89,12 +91,9 @@ public class CustomWallView extends FrameLayout implements DefaultLifecycleObser
     }
 
     private void load() {
-        int wall = Setting.getWall();
-        int type = Setting.getWallType();
-        if (isBuiltIn(wall, type)) loadRes(WALL_PAPERS[wall]);
-        else if (type == TYPE_VIDEO) loadVideo(Path.wall(wall));
-        else if (type == TYPE_GIF) loadGif(Path.wall(wall));
-        else loadImage();
+        stop();
+        int[] colors = Util.isLeanback() ? new int[]{0xFF141414, 0xFF222222} : new int[]{0xFFF7F4EF, 0xFFE4DDD2};
+        binding.image.setImageDrawable(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, colors));
     }
 
     private void theme() {

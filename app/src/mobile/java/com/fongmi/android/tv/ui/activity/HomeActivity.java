@@ -2,6 +2,7 @@ package com.fongmi.android.tv.ui.activity;
 
 import android.app.PendingIntent;
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -12,8 +13,11 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.core.splashscreen.SplashScreen;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewbinding.ViewBinding;
@@ -41,7 +45,10 @@ import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.service.PlaybackService;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.FragmentStateManager;
+import com.fongmi.android.tv.ui.fragment.KeepFragment;
+import com.fongmi.android.tv.ui.fragment.MineFragment;
 import com.fongmi.android.tv.ui.fragment.ModuleFragment;
+import com.fongmi.android.tv.ui.fragment.SearchFragment;
 import com.fongmi.android.tv.ui.fragment.SettingDanmakuFragment;
 import com.fongmi.android.tv.ui.fragment.SettingDecodeFragment;
 import com.fongmi.android.tv.ui.fragment.SettingFragment;
@@ -50,6 +57,7 @@ import com.fongmi.android.tv.ui.fragment.SettingPreloadFragment;
 import com.fongmi.android.tv.ui.fragment.VodFragment;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PermissionUtil;
+import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Util;
 import com.github.catvod.net.OkHttp;
 import com.google.android.material.navigation.NavigationBarView;
@@ -60,7 +68,18 @@ import org.greenrobot.eventbus.ThreadMode;
 public class HomeActivity extends BaseActivity implements NavigationBarView.OnItemSelectedListener {
 
     private static final String STATE_ACTION_HANDLED = "action_handled";
+    private static final String EXTRA_NAV = "nav";
+    private static final int TAB_SEARCH = 7;
+    private static final int TAB_KEEP = 8;
+    private static final int TAB_MINE = 9;
     private static volatile int instanceCount;
+
+    public static void showTab(Context context, int itemId) {
+        Intent intent = new Intent(context, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra(EXTRA_NAV, itemId);
+        context.startActivity(intent);
+    }
 
     public static boolean isRunning() {
         return instanceCount > 0;
@@ -82,6 +101,7 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
         super.onNewIntent(intent);
         setIntent(intent);
         pendingAction = intent;
+        applyNavExtra(intent);
         consumeAction();
     }
 
@@ -106,6 +126,8 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
         new ViewModelProvider(this).get(SiteViewModel.class).getAction().observe(this, result -> WebActivity.handleAction(this, result));
         orientation = getResources().getConfiguration().orientation;
         mBinding.navigation.setOnItemSelectedListener(this);
+        applyNavBarInsets();
+        setNavigation();
         initFragment(savedInstanceState);
         Updater.get().start(this, false);
         checkPermission();
@@ -113,16 +135,36 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
 
     @Override
     protected void initEvent() {
-        mBinding.navigation.findViewById(R.id.live).setOnLongClickListener(this::addShortcut);
+        View live = mBinding.navigation.findViewById(R.id.live);
+        if (live != null) live.setOnLongClickListener(this::addShortcut);
+    }
+
+    private void applyNavBarInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(mBinding.getRoot(), (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(bars.left, bars.top, bars.right, 0);
+            mBinding.navigationBar.setPadding(0, 0, 0, Math.min(bars.bottom, ResUtil.dp2px(10)));
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     private void checkAction(Intent intent) {
+        applyNavExtra(intent);
         if (Intent.ACTION_SEND.equals(intent.getAction()) || Intent.ACTION_VIEW.equals(intent.getAction())) {
             ExternalPlayback.open(this, intent, this::loadLive);
         } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String keyword = intent.getStringExtra(SearchManager.QUERY);
             if (!TextUtils.isEmpty(keyword)) SearchActivity.start(this, keyword);
         }
+    }
+
+    private void applyNavExtra(Intent intent) {
+        int nav = intent.getIntExtra(EXTRA_NAV, 0);
+        if (nav == 0) return;
+        intent.removeExtra(EXTRA_NAV);
+        if (mBinding.navigation.getMenu().findItem(nav) == null) return;
+        mBinding.navigationBar.setVisibility(View.VISIBLE);
+        mBinding.navigation.setSelectedItemId(nav);
     }
 
     private void consumeAction() {
@@ -151,6 +193,9 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
             case 4 -> SettingPreloadFragment.newInstance();
             case 5 -> SettingDecodeFragment.newInstance();
             case 6 -> ModuleFragment.newInstance();
+            case TAB_SEARCH -> SearchFragment.newInstance("");
+            case TAB_KEEP -> KeepFragment.newInstance();
+            case TAB_MINE -> MineFragment.newInstance();
             default -> null;
         };
     }
@@ -205,8 +250,9 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
 
     private void setNavigation() {
         mBinding.navigation.getMenu().findItem(R.id.vod).setVisible(true);
-        mBinding.navigation.getMenu().findItem(R.id.setting).setVisible(true);
-        mBinding.navigation.getMenu().findItem(R.id.live).setVisible(LiveConfig.hasUrl());
+        mBinding.navigation.getMenu().findItem(R.id.live).setVisible(true);
+        mBinding.navigation.getMenu().findItem(R.id.keep).setVisible(true);
+        mBinding.navigation.getMenu().findItem(R.id.mine).setVisible(true);
     }
 
     private boolean openLive() {
@@ -222,8 +268,31 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
     }
 
     public void change(int position) {
-        if (position < 2) mBinding.navigation.setSelectedItemId(position == 0 ? R.id.vod : R.id.setting);
-        else mManager.change(position);
+        if (position == 0) {
+            mBinding.navigationBar.setVisibility(View.VISIBLE);
+            mBinding.navigation.setSelectedItemId(R.id.vod);
+            mManager.change(0);
+            return;
+        }
+        if (position == TAB_SEARCH) {
+            mBinding.navigationBar.setVisibility(View.VISIBLE);
+            mManager.change(TAB_SEARCH);
+            return;
+        }
+        if (position == TAB_KEEP) {
+            mBinding.navigationBar.setVisibility(View.VISIBLE);
+            mBinding.navigation.setSelectedItemId(R.id.keep);
+            mManager.change(TAB_KEEP);
+            return;
+        }
+        if (position == TAB_MINE) {
+            mBinding.navigationBar.setVisibility(View.VISIBLE);
+            mBinding.navigation.setSelectedItemId(R.id.mine);
+            mManager.change(TAB_MINE);
+            return;
+        }
+        if (position >= 1) mBinding.navigationBar.setVisibility(View.GONE);
+        mManager.change(position);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -254,9 +323,10 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.setting) return mManager.change(1);
         if (item.getItemId() == R.id.vod) return mManager.change(0);
         if (item.getItemId() == R.id.live) return openLive();
+        if (item.getItemId() == R.id.keep) return mManager.change(TAB_KEEP);
+        if (item.getItemId() == R.id.mine) return mManager.change(TAB_MINE);
         return false;
     }
 
@@ -281,14 +351,19 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
 
     @Override
     protected void onBackInvoked() {
-        if (!mBinding.navigation.getMenu().findItem(R.id.vod).isVisible()) {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+        } else if (!mBinding.navigation.getMenu().findItem(R.id.vod).isVisible()) {
             setNavigation();
         } else if (mManager.isVisible(4) || mManager.isVisible(5)) {
             change(2);
         } else if (mManager.isVisible(3) || mManager.isVisible(2) || mManager.isVisible(6)) {
             change(1);
         } else if (mManager.isVisible(1)) {
-            change(0);
+            change(TAB_MINE);
+        } else if (mManager.isVisible(TAB_SEARCH) || mManager.isVisible(TAB_KEEP) || mManager.isVisible(TAB_MINE)) {
+            int tab = mManager.isVisible(TAB_SEARCH) ? TAB_SEARCH : mManager.isVisible(TAB_KEEP) ? TAB_KEEP : TAB_MINE;
+            if (mManager.canBack(tab)) change(0);
         } else if (mManager.canBack(0)) {
             if (PlaybackService.isRunning()) Util.moveToBackground(this);
             else super.onBackInvoked();

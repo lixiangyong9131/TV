@@ -16,11 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
-import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.custom.CustomWallView;
+import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
-import com.google.android.material.color.DynamicColors;
-import com.google.android.material.color.DynamicColorsOptions;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -33,7 +31,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         enableEdgeToEdge();
-        enableDynamicColor();
         super.onCreate(savedInstanceState);
         setContentView(getBinding().getRoot());
         EventBus.getDefault().register(this);
@@ -108,11 +105,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    private void enableDynamicColor() {
-        int color = Setting.getDynamicColor();
-        if (color != 0) DynamicColors.applyToActivityIfAvailable(this, new DynamicColorsOptions.Builder().setContentBasedSource(color).build());
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSubscribe(Object o) {
     }
@@ -122,7 +114,14 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        Notify.attach(this);
+    }
+
+    @Override
     protected void onDestroy() {
+        Notify.detach(this);
         EventBus.getDefault().unregister(this);
         super.onDestroy();
     }

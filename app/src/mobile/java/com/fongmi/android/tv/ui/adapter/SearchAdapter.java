@@ -1,6 +1,7 @@
 package com.fongmi.android.tv.ui.adapter;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -10,6 +11,7 @@ import com.bumptech.glide.Glide;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.AdapterSearchBinding;
 import com.fongmi.android.tv.utils.ImgUtil;
+import com.fongmi.android.tv.utils.VodScores;
 
 public class SearchAdapter extends BaseDiffAdapter<Vod, SearchAdapter.ViewHolder> {
 
@@ -22,6 +24,10 @@ public class SearchAdapter extends BaseDiffAdapter<Vod, SearchAdapter.ViewHolder
     public interface OnClickListener {
 
         void onItemClick(Vod item);
+
+        default void onItemClick(Vod item, View source) {
+            onItemClick(item);
+        }
     }
 
     @NonNull
@@ -35,10 +41,10 @@ public class SearchAdapter extends BaseDiffAdapter<Vod, SearchAdapter.ViewHolder
         Vod item = getItem(position);
         holder.binding.name.setText(item.getName());
         holder.binding.site.setText(item.getSiteName());
-        holder.binding.remark.setText(item.getRemarks());
         holder.binding.site.setVisibility(item.getSiteVisible());
-        holder.binding.remark.setVisibility(item.getRemarkVisible());
-        holder.binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
+        VodScores.bindRemark(holder.binding.remark, item.getRemarks());
+        holder.binding.getRoot().setOnClickListener(v -> listener.onItemClick(item, holder.binding.image));
+        VodScores.bind(holder.binding.score, item);
         ImgUtil.load(item.getName(), item.getPic(), holder.binding.image);
     }
 

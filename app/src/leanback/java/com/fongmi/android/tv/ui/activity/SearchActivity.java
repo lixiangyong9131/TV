@@ -172,7 +172,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
         String keyword = mBinding.keyword.getText().toString().trim();
         App.post(() -> mRecordAdapter.add(keyword), 250);
         Util.hideKeyboard(mBinding.keyword);
-        CollectActivity.start(this, keyword);
+        VideoActivity.pick(this, keyword);
     }
 
     @Override

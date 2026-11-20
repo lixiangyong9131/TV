@@ -4,12 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:background="@color/black"
+        app:elevation="0dp"
         app:menu="@menu/menu_search"
         app:navigationIconTint="@android:color/white">
 
@@ -18,15 +21,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
-            android:background="@null"
+            android:background="@drawable/bg_netflix_field"
             android:hint="@string/search_keyword"
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="6dp"
             android:imeOptions="actionSearch"
             android:inputType="textCapWords|textAutoCorrect|textAutoComplete"
             android:maxLength="255"
             android:singleLine="true"
             android:textAppearance="@style/ToolbarTextAppearance"
             android:textColor="@color/white"
-            android:textColorHint="@color/white"
+            android:textColorHint="@color/muted"
             android:textCursorDrawable="@drawable/shape_cursor" />
 
     </com.google.android.material.appbar.MaterialToolbar>
@@ -51,7 +58,8 @@
                 android:layout_marginBottom="16dp"
                 android:text="@string/search_record"
                 android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recordRecycler"
@@ -77,7 +85,8 @@
                 android:layout_marginBottom="16dp"
                 android:text="@string/search_hot"
                 android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/wordRecycler"

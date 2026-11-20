@@ -29,7 +29,7 @@ final class ViewModelSearchRunner {
     void start(List<Site> sites, Function<Site, Callable<Result>> taskFactory, Consumer<Result> onResult) {
         int current = nextEpoch();
         cancelFutures();
-        sites.forEach(site -> execute(taskFactory.apply(site), current, onResult));
+        sites.forEach(site -> execute(taskFactory.apply(site), current, onResult, null));
     }
 
     void stop() {
@@ -46,12 +46,16 @@ final class ViewModelSearchRunner {
         futures.clear();
     }
 
-    private void execute(Callable<Result> callable, int current, Consumer<Result> onResult) {
+    private void execute(Callable<Result> callable, int current, Consumer<Result> onResult, Runnable after) {
         FluentFuture<Result> future = FluentFuture.from(Task.largeExecutor().submit(callable)).withTimeout(Constant.TIMEOUT_SEARCH, TimeUnit.MILLISECONDS, Task.scheduler());
         futures.add(future);
         future.addCallback(Task.callback(
                 result -> {
                     if (epoch.get() == current) onResult.accept(result);
+                    if (after != null && epoch.get() == current) after.run();
+                },
+                error -> {
+                    if (after != null && epoch.get() == current) after.run();
                 }
         ), MoreExecutors.directExecutor());
     }

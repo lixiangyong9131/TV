@@ -1,6 +1,7 @@
 package com.fongmi.android.tv.ui.adapter;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
+
+    private static final int LOOP = 200;
+    private static final int WINDOW = 3;
 
     private final OnClickListener listener;
     private final List<Class> mItems;
@@ -45,9 +49,30 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
         notifyDataSetChanged();
     }
 
+    public int getSelected() {
+        for (int i = 0; i < mItems.size(); i++) if (mItems.get(i).isSelected()) return i;
+        return 0;
+    }
+
     public void setSelected(int position) {
+        setSelected(position, null);
+    }
+
+    public void setSelected(int position, RecyclerView list) {
+        if (position < 0 || position >= mItems.size() || getSelected() == position) return;
         selectItem(position);
-        notifyItemRangeChanged(0, mItems.size());
+        if (list == null) {
+            notifyDataSetChanged();
+            return;
+        }
+        for (int i = 0; i < list.getChildCount(); i++) {
+            View child = list.getChildAt(i);
+            RecyclerView.ViewHolder raw = list.getChildViewHolder(child);
+            if (!(raw instanceof ViewHolder holder)) continue;
+            int pos = holder.getBindingAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION) continue;
+            bindState(holder, mItems.get(real(pos)));
+        }
     }
 
     private void selectItem(int position) {
@@ -58,9 +83,40 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
         return mItems.get(position);
     }
 
+    public int getRealCount() {
+        return mItems.size();
+    }
+
+    public boolean looping() {
+        return mItems.size() >= WINDOW;
+    }
+
+    public int middle() {
+        return looping() ? (LOOP / 2) * mItems.size() : 0;
+    }
+
+    public int real(int adapterPos) {
+        int n = mItems.size();
+        if (n == 0) return 0;
+        int mod = adapterPos % n;
+        return mod < 0 ? mod + n : mod;
+    }
+
+    public int nearest(int real, int currentAdapter) {
+        if (!looping()) return real;
+        int n = mItems.size();
+        int base = currentAdapter - real(currentAdapter);
+        int pos = base + real;
+        if (pos - currentAdapter > n / 2) pos -= n;
+        if (currentAdapter - pos > n / 2) pos += n;
+        return pos;
+    }
+
     @Override
     public int getItemCount() {
-        return mItems.size();
+        int n = mItems.size();
+        if (n == 0) return 0;
+        return looping() ? n * LOOP : n;
     }
 
     @NonNull
@@ -71,10 +127,28 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Class item = mItems.get(position);
-        holder.binding.text.setText(item.getTypeName());
-        holder.binding.text.setSelected(item.isSelected());
-        holder.binding.text.setOnClickListener(v -> listener.onItemClick(position, item));
+        Class item = mItems.get(real(position));
+        bindState(holder, item);
+        holder.binding.text.setBackgroundResource(0);
+        int width = parentWidth(holder.itemView);
+        holder.itemView.getLayoutParams().width = Math.max(width / WINDOW, ResUtil.dp2px(72));
+        holder.binding.text.setOnClickListener(v -> listener.onItemClick(real(holder.getBindingAdapterPosition()), item));
+    }
+
+    private void bindState(ViewHolder holder, Class item) {
+        boolean featured = "片单精选".equals(item.getTypeName());
+        holder.binding.text.setText(featured ? "" : item.getTypeName());
+        boolean selected = !featured && item.isSelected();
+        holder.binding.text.setSelected(selected);
+        holder.itemView.setSelected(selected);
+        holder.binding.text.setTextColor(selected ? 0xFFFFFFFF : 0x73FFFFFF);
+    }
+
+    private int parentWidth(android.view.View itemView) {
+        ViewGroup parent = (ViewGroup) itemView.getParent();
+        int width = parent == null ? 0 : parent.getMeasuredWidth() - parent.getPaddingStart() - parent.getPaddingEnd();
+        if (width <= 0) width = ResUtil.getScreenWidth();
+        return width;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

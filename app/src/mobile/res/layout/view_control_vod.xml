@@ -110,25 +110,30 @@
             android:id="@+id/prev"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/shape_control"
+            android:background="@drawable/bg_netflix_secondary"
+            android:tint="@color/white"
             android:src="@drawable/exo_icon_previous"
             android:visibility="gone"
             tools:visibility="visible" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/play"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:background="@drawable/shape_control"
-            android:src="@drawable/exo_icon_play" />
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:stateListAnimator="@animator/netflix_card"
+            android:src="@drawable/ic_kino_play" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/next"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/shape_control"
+            android:background="@drawable/bg_netflix_secondary"
+            android:tint="@color/white"
             android:src="@drawable/exo_icon_next"
             android:visibility="gone"
             tools:visibility="visible" />
@@ -171,12 +176,30 @@
         android:orientation="vertical"
         android:paddingBottom="8dp">
 
-        <androidx.media3.ui.PlayerSeekView
-            android:id="@+id/seek"
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <androidx.media3.ui.PlayerSeekView
+                android:id="@+id/seek"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingStart="16dp"
+                android:paddingEnd="4dp" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/full"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="center"
+                android:src="@drawable/ic_control_full" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
         <include
             android:id="@+id/action"

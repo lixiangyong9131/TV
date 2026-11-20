@@ -27,6 +27,7 @@ import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.adapter.CategoryPagerAdapter;
 import com.fongmi.android.tv.ui.adapter.TypeAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.fongmi.android.tv.ui.custom.TypeTabSlider;
 import com.fongmi.android.tv.ui.fragment.FolderFragment;
 import com.fongmi.android.tv.utils.KeyUtil;
 import com.fongmi.android.tv.utils.ResUtil;
@@ -37,6 +38,7 @@ import org.greenrobot.eventbus.ThreadMode;
 public class VodActivity extends BaseActivity implements TypeAdapter.OnClickListener {
 
     private ActivityVodBinding mBinding;
+    private TypeTabSlider mTypeSlider;
     private TypeAdapter mAdapter;
     private View mOldView;
     private final Runnable mSelectPage = this::selectPage;
@@ -71,7 +73,7 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
     }
 
     private boolean hasCategories() {
-        return mAdapter.getItemCount() > 0;
+        return mAdapter.getRealCount() > 0;
     }
 
     private FolderFragment getFragment() {
@@ -95,8 +97,21 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
     protected void initEvent() {
         mBinding.pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                if (mTypeSlider == null || mAdapter.getRealCount() == 0) return;
+                mTypeSlider.followPager(position, positionOffset, mAdapter::real, mAdapter.getRealCount());
+            }
+
+            @Override
             public void onPageSelected(int position) {
                 selectCategory(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (state == ViewPager.SCROLL_STATE_IDLE && mTypeSlider != null) {
+                    mBinding.recycler.post(() -> mTypeSlider.followSelected(true));
+                }
             }
         });
         mBinding.recycler.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
@@ -109,13 +124,19 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
 
     private void setRecyclerView() {
         mBinding.recycler.requestFocus();
-        mBinding.recycler.setHorizontalSpacing(ResUtil.dp2px(16));
-        mBinding.recycler.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        mBinding.recycler.setHorizontalSpacing(0);
+        mBinding.recycler.setRowHeight(ResUtil.dp2px(48));
         mBinding.recycler.setAdapter(mAdapter = new TypeAdapter(this));
+        mTypeSlider = new TypeTabSlider(mBinding.typeSlider, mBinding.recycler);
     }
 
     private void setTypes() {
         mAdapter.addAll(getResult().getTypes());
+        mBinding.recycler.scrollToPosition(mAdapter.middle());
+        mBinding.recycler.setSelectedPosition(mAdapter.middle());
+        mBinding.recycler.post(() -> {
+            if (mTypeSlider != null) mTypeSlider.followSelected(false);
+        });
     }
 
     private void setPager() {
@@ -138,7 +159,9 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
     }
 
     private void selectCategory(int position) {
-        mBinding.recycler.setSelectedPosition(position);
+        int current = mBinding.recycler.getSelectedPosition();
+        if (current < 0) current = mAdapter.middle();
+        mBinding.recycler.setSelectedPosition(mAdapter.nearest(position, current));
         mBinding.recycler.requestFocus();
     }
 
@@ -147,18 +170,23 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
         if (child == null) return;
         mOldView = child.itemView;
         mOldView.setSelected(true);
+        if (mOldView instanceof android.widget.TextView text) text.setTextColor(0xFFFFFFFF);
+        if (mTypeSlider != null) mTypeSlider.moveTo(mOldView, true);
         mBinding.recycler.postDelayed(mSelectPage, 100);
     }
 
     private void clearCategorySelection() {
         mBinding.recycler.removeCallbacks(mSelectPage);
-        if (mOldView != null) mOldView.setSelected(false);
+        if (mOldView != null) {
+            mOldView.setSelected(false);
+            if (mOldView instanceof android.widget.TextView text) text.setTextColor(0x73FFFFFF);
+        }
         mOldView = null;
     }
 
     private void selectPage() {
         int position = mBinding.recycler.getSelectedPosition();
-        if (position >= 0 && position < mAdapter.getItemCount()) mBinding.pager.setCurrentItem(position);
+        if (position >= 0 && position < mAdapter.getItemCount()) mBinding.pager.setCurrentItem(mAdapter.real(position));
     }
 
     private boolean isFilterVisible() {
@@ -243,7 +271,7 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
 
         @Override
         public int getCount() {
-            return mAdapter.getItemCount();
+            return mAdapter.getRealCount();
         }
     }
 }

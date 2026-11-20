@@ -2,9 +2,11 @@
 
     <style name="Theme.Splash" parent="Theme.SplashScreen">
         <item name="postSplashScreenTheme">@style/Theme.App</item>
-        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowBackground">@color/netflix_red</item>
+        <item name="windowSplashScreenBackground">@color/netflix_red</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/netflix_red</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo_animated</item>
-        <item name="windowSplashScreenAnimationDuration">800</item>
+        <item name="windowSplashScreenAnimationDuration">1600</item>
     </style>
 
 </resources>

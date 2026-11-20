@@ -3,6 +3,7 @@ package com.fongmi.android.tv.ui.fragment;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,7 @@ import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomRowPresenter;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
 import com.fongmi.android.tv.ui.custom.CustomSelector;
+import com.fongmi.android.tv.ui.custom.PosterFly;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.common.collect.Lists;
@@ -121,13 +123,18 @@ public class CollectFragment extends BaseFragment implements CustomScroller.Call
 
     @Override
     public void onItemClick(Vod item) {
+        onItemClick(item, null);
+    }
+
+    @Override
+    public void onItemClick(Vod item, View source) {
         if (item.isAction()) {
             mViewModel.action(item.getSiteKey(), item.getAction());
             return;
         }
         requireActivity().setResult(Activity.RESULT_OK);
         if (item.isFolder()) VodActivity.start(requireActivity(), item.getSiteKey(), Result.folder(item));
-        else VideoActivity.collect(requireActivity(), item.getSiteKey(), item);
+        else PosterFly.open(requireActivity(), source, item.getName(), item.getPic(), () -> VideoActivity.pick(requireActivity(), item));
     }
 
     @Override

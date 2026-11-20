@@ -7,12 +7,12 @@
     </style>
 
     <style name="Vod.Grid">
-        <item name="cornerSizeTopLeft">8dp</item>
-        <item name="cornerSizeTopRight">8dp</item>
+        <item name="cornerSizeTopLeft">14dp</item>
+        <item name="cornerSizeTopRight">14dp</item>
     </style>
 
     <style name="Vod.Grid.Large">
-        <item name="cornerSize">8dp</item>
+        <item name="cornerSize">14dp</item>
     </style>
 
     <style name="Vod.Circle">
@@ -23,6 +23,42 @@
     <style name="Vod.List">
         <item name="cornerSizeTopLeft">8dp</item>
         <item name="cornerSizeBottomLeft">8dp</item>
+    </style>
+
+    <style name="ScoreBadge">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_douban_score</item>
+        <item name="android:elevation">4dp</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">#F5C518</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <style name="ScoreInline">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_score_inline</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">@dimen/score_inline_text</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <style name="MetaTag">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:layout_marginBottom">6dp</item>
+        <item name="android:background">@drawable/bg_meta_tag</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">#D5DAE2</item>
+        <item name="android:textSize">@dimen/meta_tag_text</item>
     </style>
 
     <style name="Player">

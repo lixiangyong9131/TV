@@ -26,7 +26,6 @@ public final class MpvPlayerEffect implements PlayerEffect {
     public MpvPlayerEffect(MpvPlayer player) {
         this.videoEffectController = new MpvVideoEffectController();
         this.player = player;
-        player.setAudioFilterListener(this::onAudioFilterApplied);
     }
 
     @Override

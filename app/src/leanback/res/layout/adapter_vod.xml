@@ -4,24 +4,43 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:foreground="@drawable/selector_vod">
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/image"
+    <FrameLayout
+        android:id="@+id/posterBox"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="@color/black_20"
-        app:shapeAppearanceOverlay="@style/Vod.Grid" />
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@color/black_20"
+            app:shapeAppearanceOverlay="@style/Vod.Grid" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/score"
+            style="@style/ScoreBadge"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            tools:text="8.7"
+            tools:visibility="visible" />
+    </FrameLayout>
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/image"
-        android:layout_alignTop="@+id/image"
-        android:layout_alignEnd="@+id/image"
+        android:layout_alignStart="@+id/posterBox"
+        android:layout_alignTop="@+id/posterBox"
+        android:layout_alignEnd="@+id/posterBox"
         android:layout_alignBottom="@+id/name"
         android:background="@color/black_50"
         android:scaleType="center"
@@ -70,9 +89,9 @@
         android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/image"
-        android:layout_alignStart="@+id/image"
-        android:layout_alignEnd="@+id/image"
+        android:layout_below="@+id/posterBox"
+        android:layout_alignStart="@+id/posterBox"
+        android:layout_alignEnd="@+id/posterBox"
         android:background="@drawable/shape_vod_name"
         android:ellipsize="marquee"
         android:gravity="center"

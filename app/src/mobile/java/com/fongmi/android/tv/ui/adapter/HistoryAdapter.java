@@ -11,6 +11,7 @@ import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.History;
 import com.fongmi.android.tv.databinding.AdapterVodBinding;
 import com.fongmi.android.tv.utils.ImgUtil;
+import com.fongmi.android.tv.utils.VodScores;
 
 public class HistoryAdapter extends BaseDiffAdapter<History, HistoryAdapter.ViewHolder> {
 
@@ -76,6 +77,7 @@ public class HistoryAdapter extends BaseDiffAdapter<History, HistoryAdapter.View
         holder.binding.progress.setProgress((int) item.getPosition(), animate);
         holder.binding.delete.setVisibility(!delete ? View.GONE : View.VISIBLE);
         holder.binding.remark.setVisibility(delete || same ? View.GONE : View.VISIBLE);
+        VodScores.bind(holder.binding.score, item.getVodName(), item.getVodRemarks());
         ImgUtil.load(item.getVodName(), item.getVodPic(), holder.binding.image);
         setClickListener(holder.binding.getRoot(), item);
     }

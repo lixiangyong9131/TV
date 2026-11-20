@@ -46,6 +46,7 @@ public class Updater {
     private UpdatePackage update;
     private String desc;
     private File ready;
+    private boolean force;
     private boolean checking;
     private boolean downloading;
     private boolean paused;
@@ -69,6 +70,7 @@ public class Updater {
             modulesChecked = true;
             Task.execute(this::checkModules);
         }
+        this.force = force;
         if (force) {
             Notify.show(R.string.update_check);
             Setting.putUpdate(true);
@@ -140,13 +142,19 @@ public class Updater {
             String filename = BuildConfig.FLAVOR + "-" + abi + ".apk";
             JSONObject release = Github.getUpdate(new JSONArray(OkHttp.string(Github.getReleases())), BuildConfig.VERSION_NAME, filename);
             if (release == null) {
-                App.post(() -> checking = false);
+                App.post(() -> {
+                    checking = false;
+                    if (force) Notify.show(R.string.update_latest);
+                });
                 return;
             }
             prepareRelease(release, filename);
         } catch (Exception e) {
             e.printStackTrace();
-            App.post(() -> checking = false);
+            App.post(() -> {
+                checking = false;
+                if (force) Notify.show(e.getMessage());
+            });
         }
     }
 

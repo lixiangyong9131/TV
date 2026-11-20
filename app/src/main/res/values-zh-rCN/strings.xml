@@ -1,7 +1,7 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
 
     <!-- App -->
-    <string name="app_name">影视</string>
+    <string name="app_name">MEOW</string>
 
     <!-- Live -->
     <string name="live_pass">密码</string>
@@ -17,10 +17,24 @@
     <string name="detail_director">导演：<xliff:g name="name">%s</xliff:g></string>
     <string name="detail_actor">演员：<xliff:g name="name">%s</xliff:g></string>
     <string name="detail_content">简介：<xliff:g name="name">%s</xliff:g></string>
+    <string name="detail_douban_score">豆瓣评分</string>
+    <string name="detail_cast">演职员</string>
+    <string name="detail_intro">简介</string>
     <string name="detail_desc">简介</string>
+    <string name="detail_source">站源</string>
+    <string name="detail_expand_intro">展开简介 ▾</string>
+    <string name="detail_collapse_intro">收起简介 ▴</string>
+    <string name="detail_all_episodes">查看全部 <xliff:g name="count">%d</xliff:g> 集</string>
+    <string name="detail_collapse_episodes">收起集数</string>
+    <string name="detail_play_episode">播放 <xliff:g name="name">%s</xliff:g></string>
+    <string name="detail_play_episode_num">播放 第 <xliff:g name="num">%d</xliff:g> 集</string>
+    <string name="detail_resume">继续播放</string>
+    <string name="detail_resume_episode">继续播放 <xliff:g name="name">%s</xliff:g></string>
+    <string name="detail_resume_episode_num">继续播放 第 <xliff:g name="num">%d</xliff:g> 集</string>
 
     <!-- Keep -->
     <string name="keep">收藏</string>
+    <string name="keep_done">已收藏</string>
     <string name="keep_add">已加入收藏</string>
     <string name="keep_del">已取消收藏</string>
 
@@ -51,6 +65,45 @@
     <string name="play_scale">原始</string>
     <string name="play_config">配置</string>
     <string name="play_change">换源</string>
+    <string name="play_quality_switch">换一个</string>
+    <string name="play_quality_picking">正在筛选优质源…</string>
+    <string name="play_quality_none">没有达到 200KB/s 的源</string>
+    <string name="play_quality_slow">没有达到 200KB/s 的源，请手动选择</string>
+    <string name="pick_title">正在检测画质</string>
+    <string name="pick_loading">正在读取详情…</string>
+    <string name="pick_searching">正在各站点查找「%s」</string>
+    <string name="pick_found">已找到 %1$d 个同名结果，开始测速</string>
+    <string name="pick_measuring">正在测速：%s</string>
+    <string name="pick_ready">已选中优质源</string>
+    <string name="pick_step_search">查找</string>
+    <string name="pick_step_measure">测速</string>
+    <string name="pick_step_ready">选定</string>
+    <string name="pick_hold">测完一条就出现在下面</string>
+    <string name="pick_list">分数高的在前。返回可以换一条</string>
+    <string name="pick_try">没测通。点一条直接播放，不会再重新检测</string>
+    <string name="pick_unscored">没测通，点此播放</string>
+    <string name="pick_score">分</string>
+    <string name="pick_opening">打开中</string>
+    <string name="pick_opening_title">正在打开「%s」</string>
+    <string name="pick_empty">没有测到能播的源</string>
+    <string name="pick_good">优质</string>
+    <string name="pick_play">播放</string>
+    <string name="pick_play_wait">测速中</string>
+    <string name="pick_play_ready">测速完成</string>
+    <string name="pick_play_none">暂无速度</string>
+    <string name="home_banner">综合热榜</string>
+    <string name="home_banner_series">剧集</string>
+    <string name="home_banner_top3">热榜</string>
+    <string name="home_banner_top_n">TOP %d</string>
+    <string name="pick_row_search">查找同名</string>
+    <string name="pick_row_measure">测速筛选</string>
+    <string name="pick_row_open">打开这一部</string>
+    <string name="pick_search_wait">等待查找</string>
+    <string name="pick_search_count">已查 %1$d/%2$d 个站点，找到 %3$d 部</string>
+    <string name="pick_measure_wait">等待测速</string>
+    <string name="pick_measure_plain">正在测第 %1$d/%2$d 条</string>
+    <string name="pick_measure_count">正在测第 %1$d/%2$d 条 · %3$s</string>
+    <string name="pick_open_wait">等待打开</string>
     <string name="play_invert">反转</string>
     <string name="play_across">跨类</string>
     <string name="play_reverse">倒序</string>
@@ -419,11 +472,12 @@
     <string name="error_video_effect_dolby_vision_passthrough">杜比视界直通不支持画质设置</string>
     <string name="error_play_tvbus">错误代码：<xliff:g name="name">%s</xliff:g></string>
     <string name="error_detail">暂无播放数据</string>
-    <string name="error_empty">这里什麽都没有 👀</string>
+    <string name="error_empty">这里什么都没有</string>
 
     <!-- Update -->
     <string name="update_version">发现新版本 <xliff:g name="name">%s</xliff:g></string>
     <string name="update_check">正在检测更新…</string>
+    <string name="update_latest">已是最新版本</string>
     <string name="update_confirm">更新</string>
     <string name="update_background">后台下载</string>
     <string name="update_downloading">正在下载更新…</string>

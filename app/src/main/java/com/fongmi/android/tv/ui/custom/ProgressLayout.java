@@ -7,8 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.ViewEmptyBinding;
-import com.fongmi.android.tv.databinding.ViewProgressBinding;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,11 +50,11 @@ public class ProgressLayout extends RelativeLayout {
         mEmptyView = ViewEmptyBinding.inflate(LayoutInflater.from(getContext())).getRoot();
         mEmptyView.setTag(TAG_PROGRESS);
         mEmptyView.setVisibility(GONE);
-        mProgressView = ViewProgressBinding.inflate(LayoutInflater.from(getContext())).getRoot();
+        mProgressView = LayoutInflater.from(getContext()).inflate(R.layout.view_shimmer_bones, this, false);
         mProgressView.setTag(TAG_PROGRESS);
         mProgressView.setVisibility(GONE);
-        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.addRule(CENTER_IN_PARENT);
+        shine(mProgressView, new int[]{0});
+        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mProgressView, params);
         addView(mEmptyView, params);
     }
@@ -103,16 +103,19 @@ public class ProgressLayout extends RelativeLayout {
             case CONTENT:
                 mEmptyView.setVisibility(GONE);
                 mProgressView.setVisibility(GONE);
+                shimmer(mProgressView, false);
                 setContentVisibility(true);
                 break;
             case PROGRESS:
                 mEmptyView.setVisibility(GONE);
                 mProgressView.setVisibility(VISIBLE);
+                shimmer(mProgressView, true);
                 setContentVisibility(false);
                 break;
             case EMPTY:
                 mEmptyView.setVisibility(VISIBLE);
                 mProgressView.setVisibility(GONE);
+                shimmer(mProgressView, false);
                 setContentVisibility(false);
                 break;
         }
@@ -133,5 +136,23 @@ public class ProgressLayout extends RelativeLayout {
 
     private void hideView(View view) {
         view.setVisibility(INVISIBLE);
+    }
+
+    private static void shine(View view, int[] index) {
+        if (view instanceof ViewGroup group) {
+            for (int i = 0; i < group.getChildCount(); i++) shine(group.getChildAt(i), index);
+            return;
+        }
+        if (view.getBackground() != null) view.setBackground(new ShimmerDrawable(index[0]++ * 110L));
+    }
+
+    private static void shimmer(View view, boolean run) {
+        if (view instanceof ViewGroup group) {
+            for (int i = 0; i < group.getChildCount(); i++) shimmer(group.getChildAt(i), run);
+        }
+        if (view.getBackground() instanceof ShimmerDrawable drawable) {
+            if (run) drawable.start();
+            else drawable.stop();
+        }
     }
 }

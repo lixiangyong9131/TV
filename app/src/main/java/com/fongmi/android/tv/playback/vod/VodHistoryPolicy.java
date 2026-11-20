@@ -58,6 +58,18 @@ public class VodHistoryPolicy {
         save(history, exit);
     }
 
+    public void remember(History history) {
+        if (history == null || Setting.isIncognito()) return;
+        history.setCreateTime(System.currentTimeMillis());
+        if (history.getPosition() < 0) history.setPosition(0);
+        if (history.getDuration() <= 0) history.setDuration(Math.max(history.getPosition(), 1));
+        History copy = history.copy();
+        Task.executeSerial(() -> {
+            copy.save();
+            RefreshEvent.history();
+        });
+    }
+
     public void saveVisit(History history, boolean exit, long time) {
         if (history == null || Setting.isIncognito()) return;
         history.setCreateTime(time);
@@ -117,16 +129,22 @@ public class VodHistoryPolicy {
     }
 
     public void updateProgress(History history, long time, long position, long duration) {
-        if (position < 0 || duration <= 0) return;
-        applyProgress(history, time, position, duration);
-        if (history != null && history.canSave() && history.canScheduleSave()) saveCurrent(history);
+        if (history == null || position < 0) return;
+        applyProgress(history, time, position, knownDuration(history, position, duration));
+        if (history.canSave() && history.canScheduleSave()) saveCurrent(history);
     }
 
     private void applyProgress(History history, long time, long position, long duration) {
-        if (history == null || position < 0 || duration <= 0) return;
+        if (history == null || position < 0) return;
         history.setCreateTime(time);
         history.setPosition(position);
-        history.setDuration(duration);
+        history.setDuration(knownDuration(history, position, duration));
+    }
+
+    private long knownDuration(History history, long position, long duration) {
+        if (duration > 0) return duration;
+        long current = history == null ? 0 : history.getDuration();
+        return Math.max(current, Math.max(position, 1));
     }
 
     private History copyForSave(History history) {

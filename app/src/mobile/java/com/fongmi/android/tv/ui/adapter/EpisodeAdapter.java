@@ -22,6 +22,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
     private final OnClickListener listener;
     private final List<Episode> mItems;
     private final int viewType;
+    private int previewLimit;
 
     public EpisodeAdapter(OnClickListener listener, int viewType) {
         this(listener, viewType, new ArrayList<>());
@@ -44,6 +45,28 @@ public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
         notifyDataSetChanged();
     }
 
+    public void setPreviewLimit(int limit) {
+        int oldCount = getItemCount();
+        this.previewLimit = limit;
+        int newCount = getItemCount();
+        if (newCount > oldCount) notifyItemRangeInserted(oldCount, newCount - oldCount);
+        else if (newCount < oldCount) notifyItemRangeRemoved(newCount, oldCount - newCount);
+        else notifyItemRangeChanged(0, newCount);
+    }
+
+    public void setPreviewLimitSilent(int limit) {
+        this.previewLimit = limit;
+    }
+
+    public boolean isWatched(int position) {
+        int current = getPosition();
+        if (current <= 0 || position < 0 || position >= mItems.size() || position == current) return false;
+        Episode now = mItems.get(current);
+        Episode item = mItems.get(position);
+        if (now.getNumber() > 0 && item.getNumber() > 0) return item.getNumber() < now.getNumber();
+        return position < current;
+    }
+
     public int getPosition() {
         for (int i = 0; i < mItems.size(); i++) if (mItems.get(i).isSelected()) return i;
         return 0;
@@ -59,7 +82,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
 
     public Episode getNext() {
         int current = getPosition();
-        int max = getItemCount() - 1;
+        int max = mItems.size() - 1;
         current = ++current > max ? max : current;
         return mItems.get(current);
     }
@@ -80,6 +103,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<BaseEpisodeHolder> {
 
     @Override
     public int getItemCount() {
+        if (previewLimit > 0 && mItems.size() > previewLimit) return previewLimit;
         return mItems.size();
     }
 

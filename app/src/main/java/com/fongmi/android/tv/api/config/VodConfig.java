@@ -127,6 +127,11 @@ public class VodConfig extends BaseConfig {
 
     @Override
     protected void load(Config config) throws Throwable {
+        if (config == null || TextUtils.isEmpty(config.getUrl())) {
+            NodeRuntime.get().clear();
+            parseConfig(config == null ? defaultConfig() : config, new JsonObject());
+            return;
+        }
         boolean node = NodeRuntime.isConfig(config.getUrl());
         NodeRuntime runtime = NodeRuntime.get();
         if (!node) runtime.clear();
@@ -207,10 +212,15 @@ public class VodConfig extends BaseConfig {
     private void initSite(Config config, JsonObject object) {
         String spider = Json.safeString(object, "spider");
         BaseLoader.get().parseJar(spider, true);
-        setSites(Json.safeListElement(object, "sites").stream().map(e -> Site.objectFrom(e, spider)).distinct().collect(Collectors.toCollection(ArrayList::new)));
+        List<Site> sites = Json.safeListElement(object, "sites").stream().map(e -> Site.objectFrom(e, spider)).distinct().collect(Collectors.toCollection(ArrayList::new));
+        sites.removeIf(site -> "cnflix".equals(site.getKey()) || "csp_Cnflix".equals(site.getApi()));
+        setSites(sites);
         Map<String, Site> items = Site.findAll().stream().collect(Collectors.toMap(Site::getKey, Function.identity()));
         getSites().forEach(site -> site.sync(items.get(site.getKey())));
-        setHome(config, getSites().isEmpty() ? new Site() : getSites().stream().filter(item -> item.getKey().equals(config.getHome())).findFirst().orElse(getSites().get(0)), false);
+        boolean resetHome = "cnflix".equals(config.getHome());
+        String homeKey = resetHome ? "" : config.getHome();
+        Site home = getSites().isEmpty() ? new Site() : getSites().stream().filter(item -> item.getKey().equals(homeKey)).findFirst().orElse(getSites().get(0));
+        setHome(config, home, resetHome);
     }
 
     private void initParse(Config config, JsonObject object) {

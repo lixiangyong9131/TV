@@ -1,12 +1,17 @@
 package com.fongmi.android.tv.utils;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.widget.Toast;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationChannelCompat;
@@ -26,7 +31,9 @@ public class Notify {
     public static final String DEFAULT = "default";
     public static final int ID = 9527;
     private AlertDialog mDialog;
-    private Toast mToast;
+    private View toastView;
+    private Runnable hideToast;
+    private String pending;
 
     private static class Loader {
         static volatile Notify INSTANCE = new Notify();
@@ -64,11 +71,30 @@ public class Notify {
         NotificationManagerCompat.from(App.get()).notify(ID, notification);
     }
 
+    public static void attach(Activity activity) {
+    }
+
+    public static void detach(Activity activity) {
+    }
+
+    public static void onForeground() {
+        App.post(() -> get().showPending());
+    }
+
     public static void show(int resId) {
         if (resId != 0) show(ResUtil.getString(resId));
     }
 
     public static void show(String text) {
+        show(text, false);
+    }
+
+    public static void showAlways(String text) {
+        show(text, true);
+    }
+
+    private static void show(String text, boolean force) {
+        if (!force && com.fongmi.android.tv.playback.vod.PickSilence.toastMuted()) return;
         if (!TextUtils.isEmpty(text)) get().makeText(text);
     }
 
@@ -92,8 +118,42 @@ public class Notify {
     }
 
     private void makeText(String text) {
-        if (mToast != null) mToast.cancel();
-        mToast = Toast.makeText(App.get(), text, Toast.LENGTH_LONG);
-        mToast.show();
+        pending = text;
+        App.post(this::showPending);
+    }
+
+    private void showPending() {
+        String text = pending;
+        if (TextUtils.isEmpty(text)) return;
+        Activity activity = App.activity();
+        if (activity == null || activity.isFinishing()) return;
+        ViewGroup content = activity.findViewById(android.R.id.content);
+        if (!(content instanceof FrameLayout)) return;
+        pending = null;
+        if (toastView != null && toastView.getParent() != content) {
+            if (toastView.getParent() instanceof ViewGroup parent) parent.removeView(toastView);
+            toastView = null;
+        }
+        if (toastView == null) {
+            toastView = LayoutInflater.from(activity).inflate(R.layout.view_netflix_toast, content, false);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+            int side = ResUtil.dp2px(24);
+            params.setMargins(side, 0, side, ResUtil.dp2px(88));
+            toastView.setElevation(ResUtil.dp2px(16));
+            content.addView(toastView, params);
+        }
+        content.bringChildToFront(toastView);
+        ((TextView) toastView).setText(text);
+        toastView.animate().cancel();
+        toastView.setAlpha(0f);
+        toastView.setTranslationY(ResUtil.dp2px(16));
+        toastView.animate().alpha(1f).translationY(0f).setDuration(180).start();
+        if (hideToast != null) toastView.removeCallbacks(hideToast);
+        View shown = toastView;
+        hideToast = () -> shown.animate().alpha(0f).translationY(ResUtil.dp2px(12)).setDuration(160).withEndAction(() -> {
+            if (shown.getParent() instanceof ViewGroup parent) parent.removeView(shown);
+            if (toastView == shown) toastView = null;
+        }).start();
+        toastView.postDelayed(hideToast, 2200);
     }
 }

@@ -97,12 +97,14 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/play"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:background="@drawable/shape_control"
-            android:src="@drawable/exo_icon_play" />
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_kino_play" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/next"

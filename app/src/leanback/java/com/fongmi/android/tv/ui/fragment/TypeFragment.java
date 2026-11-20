@@ -3,6 +3,7 @@ package com.fongmi.android.tv.ui.fragment;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -34,6 +35,7 @@ import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomRowPresenter;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
 import com.fongmi.android.tv.ui.custom.CustomSelector;
+import com.fongmi.android.tv.ui.custom.PosterFly;
 import com.fongmi.android.tv.ui.presenter.FilterPresenter;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ResUtil;
@@ -121,6 +123,8 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     @Override
     protected void initEvent() {
         mBinding.swipeLayout.setOnRefreshListener(this);
+        mBinding.swipeLayout.setColorSchemeColors(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.netflix_red));
+        mBinding.swipeLayout.setProgressBackgroundColorSchemeColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.netflix_card));
         mBinding.recycler.addOnScrollListener(mScroller);
     }
 
@@ -254,16 +258,25 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         return mBinding != null && mBinding.recycler.moveToTop();
     }
 
+    private void openBest(Vod item) {
+        VideoActivity.pick(requireActivity(), item);
+    }
+
     @Override
     public void onItemClick(Vod item) {
+        onItemClick(item, null);
+    }
+
+    @Override
+    public void onItemClick(Vod item, View source) {
+        if (item.getId() != null && item.getId().startsWith("chart-header")) return;
         if (item.isAction()) {
             new ViewModelProvider(requireActivity()).get(SiteViewModel.class).action(getKey(), item.getAction());
         } else if (item.isFolder()) {
             getParent().openFolder(item.getId(), mExtends);
             headerVisible = mBinding.recycler.isHeaderVisible();
         } else {
-            if (getSite().isIndex()) CollectActivity.start(requireActivity(), item.getName());
-            else VideoActivity.start(requireActivity(), getKey(), item, isFolder() ? item.getName() : null);
+            PosterFly.open(requireActivity(), source, item.getName(), item.getPic(), () -> openBest(item));
         }
     }
 

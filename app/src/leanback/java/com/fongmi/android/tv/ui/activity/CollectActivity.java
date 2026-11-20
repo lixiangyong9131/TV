@@ -123,7 +123,7 @@ public class CollectActivity extends BaseActivity {
     }
 
     private void setSites() {
-        mSites = VodConfig.get().getSites().stream().filter(Site::isSearchable).toList();
+        mSites = new ArrayList<>(VodConfig.get().getSites().stream().filter(Site::isSearchable).toList());
     }
 
     private void setPager() {

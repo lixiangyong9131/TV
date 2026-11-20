@@ -22,6 +22,7 @@ import com.fongmi.android.tv.receiver.RuntimeReceiver;
 import com.fongmi.android.tv.ui.dialog.SpiderDialog;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.RuntimeInstaller;
+import com.fongmi.android.tv.utils.SystemToast;
 import com.fongmi.hook.Hook;
 import com.github.catvod.Runtime;
 import com.github.catvod.utils.RuntimeModule;
@@ -89,20 +90,23 @@ public class App extends Application implements Application.ActivityLifecycleCal
         super.attachBaseContext(base);
         Runtime.set(base);
         Runtime.setActivity(App::activity);
-        Runtime.setToast(text -> App.post(() -> Notify.show(text)));
+        Runtime.setToast(text -> App.post(() -> {
+            if (com.fongmi.android.tv.playback.vod.PickSilence.toastMuted()) return;
+            Notify.show(text);
+        }));
         Runtime.setDialog(SpiderDialog::show);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        SystemToast.install();
         initRuntime();
         Notify.createChannel();
         registerActivityLifecycleCallbacks(this);
     }
 
     private void initRuntime() {
-        MpvLibrary.setLibraryLoader(MpvUtil::loadRuntime);
         RuntimeModule.refresh();
         cleanRuntime();
         RuntimeReceiver.register(this);
@@ -142,6 +146,8 @@ public class App extends Application implements Application.ActivityLifecycleCal
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
         if (activity != activity()) this.activity = activity;
+        SystemToast.install();
+        Notify.onForeground();
         RuntimeModule.refresh();
         RuntimeInstaller.resumeUpdate(activity);
         Updater.get().notifyModules();

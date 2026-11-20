@@ -33,12 +33,13 @@ public class Func implements Diffable<Func> {
     }
 
     public void setDrawable() {
-        if (resId == R.string.home_vod) this.drawable = R.drawable.ic_home_vod;
-        else if (resId == R.string.home_live) this.drawable = R.drawable.ic_home_live;
-        else if (resId == R.string.home_keep) this.drawable = R.drawable.ic_home_keep;
+        if (resId == R.string.home_vod) this.drawable = R.drawable.ic_kino_home_filled;
+        else if (resId == R.string.home_live) this.drawable = R.drawable.ic_kino_tv_filled;
+        else if (resId == R.string.home_keep) this.drawable = R.drawable.ic_kino_bookmark_filled;
         else if (resId == R.string.home_push) this.drawable = R.drawable.ic_home_connect;
-        else if (resId == R.string.home_search) this.drawable = R.drawable.ic_home_search;
-        else if (resId == R.string.home_setting) this.drawable = R.drawable.ic_home_setting;
+        else if (resId == R.string.home_search) this.drawable = R.drawable.ic_kino_search_filled;
+        else if (resId == R.string.home_setting) this.drawable = R.drawable.ic_kino_settings;
+        else if (resId == R.string.home_mine) this.drawable = R.drawable.ic_kino_user_filled;
     }
 
     @Override

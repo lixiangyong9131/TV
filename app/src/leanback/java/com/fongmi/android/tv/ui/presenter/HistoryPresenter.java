@@ -13,6 +13,7 @@ import com.fongmi.android.tv.bean.History;
 import com.fongmi.android.tv.databinding.AdapterVodBinding;
 import com.fongmi.android.tv.utils.ImgUtil;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.fongmi.android.tv.utils.VodScores;
 
 public class HistoryPresenter extends Presenter {
 
@@ -78,6 +79,7 @@ public class HistoryPresenter extends Presenter {
         holder.binding.site.setVisibility(item.getSiteVisible());
         holder.binding.delete.setVisibility(!delete ? View.GONE : View.VISIBLE);
         holder.binding.remark.setVisibility(delete || same ? View.GONE : View.VISIBLE);
+        VodScores.bind(holder.binding.score, item.getVodName(), item.getVodRemarks());
         ImgUtil.load(item.getVodName(), item.getVodPic(), holder.binding.image);
     }
 

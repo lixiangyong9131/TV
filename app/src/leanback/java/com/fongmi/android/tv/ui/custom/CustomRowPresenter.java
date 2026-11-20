@@ -22,7 +22,7 @@ public class CustomRowPresenter extends ListRowPresenter {
     private ArrayList<Presenter> presenterMapper;
 
     public CustomRowPresenter(int spacing) {
-        this(spacing, FocusHighlight.ZOOM_FACTOR_SMALL);
+        this(spacing, FocusHighlight.ZOOM_FACTOR_MEDIUM);
     }
 
     @SuppressLint("RestrictedApi")

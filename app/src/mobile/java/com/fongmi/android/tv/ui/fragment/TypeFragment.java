@@ -2,6 +2,7 @@ package com.fongmi.android.tv.ui.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.Product;
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Filter;
 import com.fongmi.android.tv.bean.Result;
@@ -27,6 +29,7 @@ import com.fongmi.android.tv.ui.activity.VideoActivity;
 import com.fongmi.android.tv.ui.adapter.VodAdapter;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
+import com.fongmi.android.tv.ui.custom.PosterFly;
 import com.fongmi.android.tv.utils.ResUtil;
 
 import java.util.HashMap;
@@ -107,18 +110,26 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     @Override
     protected void initEvent() {
         mBinding.swipeLayout.setOnRefreshListener(this);
+        mBinding.swipeLayout.setColorSchemeColors(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.netflix_red));
+        mBinding.swipeLayout.setProgressBackgroundColorSchemeColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.netflix_card));
         mBinding.recycler.addOnScrollListener(mScroller);
     }
 
     private void setRecyclerView() {
         mBinding.recycler.setTranslationY(-ResUtil.dp2px(getY()));
         mBinding.recycler.setHasFixedSize(true);
+        mBinding.recycler.setLayoutAnimation(android.view.animation.AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_netflix));
         setStyle(getStyle());
     }
 
     private void setStyle(Style style) {
-        mBinding.recycler.setAdapter(mAdapter = new VodAdapter(this, style, Product.getSpec(requireActivity(), style)));
-        mBinding.recycler.setLayoutManager(style.isList() ? new LinearLayoutManager(requireActivity()) : new GridLayoutManager(getContext(), Product.getColumn(requireActivity(), style)));
+        mAdapter = new VodAdapter(this, style, Product.getSpec(requireActivity(), style));
+        mBinding.recycler.setAdapter(mAdapter);
+        if (style.isList() || style.isChart()) {
+            mBinding.recycler.setLayoutManager(new LinearLayoutManager(requireActivity()));
+        } else {
+            mBinding.recycler.setLayoutManager(new GridLayoutManager(getContext(), Product.getColumn(requireActivity(), style)));
+        }
     }
 
     private void setViewModel() {
@@ -150,6 +161,7 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         mBinding.swipeLayout.setRefreshing(false);
         mScroller.endLoading(result);
         if (size > 0) addVideo(result);
+        if (first && size > 0) mBinding.recycler.scheduleLayoutAnimation();
     }
 
     private void addVideo(Result result) {
@@ -199,15 +211,24 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         return true;
     }
 
+    private void openBest(Vod item) {
+        VideoActivity.pick(requireActivity(), item);
+    }
+
     @Override
     public void onItemClick(Vod item) {
+        onItemClick(item, null);
+    }
+
+    @Override
+    public void onItemClick(Vod item, View source) {
+        if (item.getId() != null && item.getId().startsWith("chart-header")) return;
         if (item.isAction()) {
             new ViewModelProvider(requireActivity()).get(SiteViewModel.class).action(getKey(), item.getAction());
         } else if (item.isFolder()) {
             getParent().openFolder(item.getId(), mExtends);
         } else {
-            if (getSite().isIndex()) SearchActivity.start(requireActivity(), item.getName());
-            else VideoActivity.start(requireActivity(), getKey(), item, isFolder() ? item.getName() : null);
+            PosterFly.open(requireActivity(), source, item.getName(), item.getPic(), () -> openBest(item));
         }
     }
 

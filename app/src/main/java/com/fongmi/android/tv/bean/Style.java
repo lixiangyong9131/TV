@@ -64,6 +64,10 @@ public class Style implements Parcelable {
         return "list".equals(getType());
     }
 
+    public boolean isChart() {
+        return "chart".equals(getType());
+    }
+
     public boolean isLand() {
         return isRect() && getRatio() > 1.0f;
     }
@@ -72,6 +76,7 @@ public class Style implements Parcelable {
         return switch (getType()) {
             case "oval" -> ViewType.OVAL;
             case "list" -> ViewType.LIST;
+            case "chart" -> ViewType.CHART;
             default -> ViewType.RECT;
         };
     }

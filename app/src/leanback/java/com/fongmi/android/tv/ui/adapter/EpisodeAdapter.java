@@ -43,6 +43,15 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
         return 0;
     }
 
+    private boolean isWatched(int position) {
+        int current = getPosition();
+        if (current <= 0 || position < 0 || position >= mItems.size() || position == current) return false;
+        Episode now = mItems.get(current);
+        Episode item = mItems.get(position);
+        if (now.getNumber() > 0 && item.getNumber() > 0) return item.getNumber() < now.getNumber();
+        return position < current;
+    }
+
     public Episode getActivated() {
         return mItems.isEmpty() ? new Episode() : mItems.get(getPosition());
     }
@@ -84,11 +93,12 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Episode item = mItems.get(position);
+        holder.binding.getRoot().setNextFocusUpId(nextFocusUp);
+        holder.binding.getRoot().setNextFocusDownId(nextFocusDown);
         holder.binding.text.setMaxWidth(maxWidth);
-        holder.binding.text.setNextFocusUpId(nextFocusUp);
-        holder.binding.text.setNextFocusDownId(nextFocusDown);
         holder.binding.text.setSelected(item.isSelected());
-        holder.binding.text.setText(item.getDesc().concat(item.getName()));
+        holder.binding.text.setText(item.getLabel());
+        holder.binding.watched.setVisibility(!item.isSelected() && isWatched(position) ? android.view.View.VISIBLE : android.view.View.GONE);
         holder.binding.getRoot().setOnClickListener(v -> mListener.onItemClick(item));
     }
 

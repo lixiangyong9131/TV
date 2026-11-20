@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -34,10 +35,9 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.net.HttpHeaders;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import jahirfiquitiva.libs.textdrawable.TextDrawable;
@@ -47,7 +47,12 @@ public class ImgUtil {
     private static final int MAX_CACHE_SIZE = 16 * 1024 * 1024;
     private static final int MAX_DATA_URI_LENGTH = 8 * 1024 * 1024;
     private static final Pattern IMAGE_MIME = Pattern.compile("image/[a-z0-9.+-]+");
-    private static final Set<String> failed = Collections.synchronizedSet(new HashSet<>());
+    private static final Map<String, Boolean> failed = Collections.synchronizedMap(new LinkedHashMap<>(64, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
+            return size() > 256;
+        }
+    });
     private static final Cache<String, Image> CACHE = CacheBuilder.newBuilder().maximumWeight(MAX_CACHE_SIZE).weigher((String key, Image value) -> value.data().length).build();
 
     public static void logo(ImageView view) {
@@ -74,35 +79,100 @@ public class ImgUtil {
         }
     }
 
+    public static String large(String url) {
+        if (TextUtils.isEmpty(url)) return "";
+        String out = url;
+        out = out.replace("/s_ratio_poster/", "/l_ratio_poster/");
+        out = out.replace("/m_ratio_poster/", "/l_ratio_poster/");
+        out = out.replace("/photo/s/", "/photo/l/");
+        out = out.replace("/photo/m/", "/photo/l/");
+        out = out.replace("/movie_poster_cover/ipst/", "/movie_poster_cover/lpst/");
+        out = out.replace("/t/p/w92/", "/t/p/original/");
+        out = out.replace("/t/p/w154/", "/t/p/original/");
+        out = out.replace("/t/p/w185/", "/t/p/original/");
+        out = out.replace("/t/p/w300/", "/t/p/original/");
+        out = out.replace("/t/p/w342/", "/t/p/original/");
+        out = out.replace("/t/p/w500/", "/t/p/original/");
+        out = out.replace("/t/p/w780/", "/t/p/original/");
+        out = out.replaceAll("imageView2/\\d/w/\\d+", "imageView2/2/w/1280");
+        out = out.replaceAll("image/resize,w_\\d+", "image/resize,w_1280");
+        return out;
+    }
+
+    public static void loadBanner(String text, String url, ImageView view) {
+        view.setScaleType(CENTER_CROP);
+        String src = large(url);
+        if (TextUtils.isEmpty(src) || failed.containsKey(src)) {
+            Glide.with(view).clear(view);
+            view.setImageDrawable(getTextDrawable(text, true));
+            return;
+        }
+        try {
+            int w = Math.min(Math.max(ResUtil.getScreenWidth(), 720), 1600);
+            int h = Math.min(Math.max(view.getMeasuredHeight(), ResUtil.dp2px(224)), 900);
+            Glide.with(view).load(getUrl(src)).listener(getListener(text, src, "", view, true)).override(w, h).centerCrop().into(view);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void load(String text, String url, ImageView view) {
-        load(text, url, view, true);
+        load(text, url, "", view, true);
+    }
+
+    public static void load(String text, String url, String fallback, ImageView view) {
+        load(text, url, fallback, view, true);
     }
 
     public static void load(String text, String url, ImageView view, boolean vod) {
+        load(text, url, "", view, vod);
+    }
+
+    public static void load(String text, String url, String fallback, ImageView view, boolean vod) {
         view.setScaleType(vod ? CENTER_CROP : FIT_CENTER);
-        if (!vod && TextUtils.isEmpty(url)) {
+        if (!vod && TextUtils.isEmpty(url) && TextUtils.isEmpty(fallback)) {
             Glide.with(view).clear(view);
             view.setImageDrawable(null);
             view.setVisibility(View.GONE);
             return;
         }
         if (!vod) view.setVisibility(View.VISIBLE);
-        if (TextUtils.isEmpty(url) || failed.contains(url)) {
+        if (TextUtils.isEmpty(url) || failed.containsKey(url)) {
+            if (!TextUtils.isEmpty(fallback) && !failed.containsKey(fallback)) {
+                loadImage(text, fallback, "", view, vod);
+                return;
+            }
             Glide.with(view).clear(view);
             view.setImageDrawable(getTextDrawable(text, vod));
             return;
         }
-        loadImage(text, url, view, vod);
+        loadImage(text, url, fallback, view, vod);
     }
 
-    private static void loadImage(String text, String url, ImageView view, boolean vod) {
+    private static void loadImage(String text, String url, String fallback, ImageView view, boolean vod) {
         try {
-            RequestBuilder<Drawable> builder = Glide.with(view).load(getUrl(url)).listener(getListener(text, url, view, vod));
+            int[] size = thumbSize(view);
+            RequestBuilder<Drawable> builder = Glide.with(view).load(getUrl(url)).listener(getListener(text, url, fallback, view, vod)).override(size[0], size[1]);
             if (vod) builder.centerCrop().into(view);
             else builder.fitCenter().into(view);
         } catch (Throwable e) {
             e.printStackTrace();
         }
+    }
+
+    private static int[] thumbSize(ImageView view) {
+        int w = view.getMeasuredWidth();
+        int h = view.getMeasuredHeight();
+        ViewGroup.LayoutParams lp = view.getLayoutParams();
+        if (h <= 1 && lp != null && lp.height > 0) h = lp.height;
+        if (w <= 1 && lp != null && lp.width > 0) w = lp.width;
+        if (w <= 1 && view.getParent() instanceof View parent) {
+            ViewGroup.LayoutParams pl = parent.getLayoutParams();
+            if (pl != null && pl.width > 0) w = pl.width;
+        }
+        if (w <= 1) w = ResUtil.dp2px(180);
+        if (h <= 1) h = ResUtil.dp2px(240);
+        return new int[]{w, h};
     }
 
     public static Object getUrl(String url) {
@@ -166,12 +236,16 @@ public class ImgUtil {
         return builder.buildRoundRect(text, ColorGenerator.get400(text), ResUtil.dp2px(4));
     }
 
-    private static RequestListener<Drawable> getListener(String text, String url, ImageView view, boolean vod) {
+    private static RequestListener<Drawable> getListener(String text, String url, String fallback, ImageView view, boolean vod) {
         return new RequestListener<>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
+                failed.put(url, Boolean.TRUE);
+                if (!TextUtils.isEmpty(fallback) && !failed.containsKey(fallback)) {
+                    load(text, fallback, "", view, vod);
+                    return true;
+                }
                 view.setImageDrawable(getTextDrawable(text, vod));
-                failed.add(url);
                 return true;
             }
 

@@ -8,6 +8,7 @@ import com.fongmi.android.tv.databinding.AdapterVodListBinding;
 import com.fongmi.android.tv.ui.base.BaseVodHolder;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ImgUtil;
+import com.fongmi.android.tv.utils.VodScores;
 
 public class VodListHolder extends BaseVodHolder {
 
@@ -23,10 +24,10 @@ public class VodListHolder extends BaseVodHolder {
     @Override
     public void initView(Vod item) {
         binding.name.setText(item.getName());
-        binding.remark.setText(item.getRemarks());
+        VodScores.bind(binding.score, item);
+        VodScores.bindRemark(binding.remark, item.getRemarks());
         binding.name.setVisibility(item.getNameVisible());
-        binding.remark.setVisibility(item.getRemarkVisible());
-        binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
+        binding.getRoot().setOnClickListener(v -> listener.onItemClick(item, binding.image));
         binding.getRoot().setOnLongClickListener(v -> listener.onLongClick(item));
         ImgUtil.load(item.getName(), item.getPic(), binding.image, true);
     }

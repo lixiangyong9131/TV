@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Collect;
 import com.fongmi.android.tv.bean.Result;
@@ -31,8 +32,10 @@ import com.fongmi.android.tv.ui.adapter.CollectAdapter;
 import com.fongmi.android.tv.ui.adapter.SearchAdapter;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
+import com.fongmi.android.tv.ui.custom.PosterFly;
 import com.fongmi.android.tv.utils.ResUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CollectFragment extends BaseFragment implements MenuProvider, CollectAdapter.OnClickListener, SearchAdapter.OnClickListener, CustomScroller.Callback {
@@ -98,6 +101,7 @@ public class CollectFragment extends BaseFragment implements MenuProvider, Colle
         mBinding.collect.setHasFixedSize(true);
         mBinding.collect.setAdapter(mCollectAdapter = new CollectAdapter(this));
         mBinding.recycler.setHasFixedSize(true);
+        mBinding.recycler.setLayoutAnimation(android.view.animation.AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_netflix));
         mBinding.recycler.addOnScrollListener(mScroller);
         mBinding.recycler.setAdapter(mSearchAdapter = new SearchAdapter(this));
         ((GridLayoutManager) (mBinding.recycler.getLayoutManager())).setSpanCount(getCount());
@@ -111,7 +115,7 @@ public class CollectFragment extends BaseFragment implements MenuProvider, Colle
     }
 
     private void setSites() {
-        mSites = VodConfig.get().getSites().stream().filter(Site::isSearchable).toList();
+        mSites = new ArrayList<>(VodConfig.get().getSites().stream().filter(Site::isSearchable).toList());
     }
 
     private void setWidth() {
@@ -140,7 +144,9 @@ public class CollectFragment extends BaseFragment implements MenuProvider, Colle
 
     private void setCollect(Result result) {
         if (result == null || result.getList().isEmpty()) return;
+        boolean fresh = mSearchAdapter.getItemCount() == 0;
         if (mCollectAdapter.getPosition() == 0) mSearchAdapter.addAll(result.getList());
+        if (fresh && mCollectAdapter.getPosition() == 0) mBinding.recycler.post(mBinding.recycler::scheduleLayoutAnimation);
         mCollectAdapter.add(Collect.create(result.getList()));
         mCollectAdapter.add(result.getList());
     }
@@ -162,9 +168,14 @@ public class CollectFragment extends BaseFragment implements MenuProvider, Colle
 
     @Override
     public void onItemClick(Vod item) {
+        onItemClick(item, null);
+    }
+
+    @Override
+    public void onItemClick(Vod item, View source) {
         if (item.isAction()) mViewModel.action(item.getSiteKey(), item.getAction());
         else if (item.isFolder()) FolderActivity.start(requireActivity(), item.getSiteKey(), Result.folder(item));
-        else VideoActivity.collect(requireActivity(), item.getSiteKey(), item);
+        else PosterFly.open(requireActivity(), source, item.getName(), item.getPic(), () -> VideoActivity.pick(requireActivity(), item));
     }
 
     @Override

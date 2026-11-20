@@ -15,7 +15,7 @@ import java.util.Comparator;
 
 final class NetStore {
 
-    private static final long MAX_BYTES = 16 * 1024 * 1024;
+    private static final long MAX_BYTES = 2 * 1024 * 1024;
     private static final Object LOCK = new Object();
     private final File directory;
 
@@ -79,7 +79,7 @@ final class NetStore {
         Arrays.sort(files, Comparator.comparingLong(File::lastModified));
         long bytes = 0;
         for (File file : files) bytes += file.length();
-        for (int i = 0; i < files.length && (files.length - i > 64 || bytes > MAX_BYTES); i++) {
+        for (int i = 0; i < files.length && (files.length - i > 24 || bytes > MAX_BYTES); i++) {
             bytes -= files[i].length();
             delete(files[i]);
         }

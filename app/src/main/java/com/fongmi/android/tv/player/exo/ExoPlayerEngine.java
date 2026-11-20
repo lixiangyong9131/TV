@@ -49,6 +49,7 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
     private final ExoDiskPreload preload;
     private final ExoPlayer player;
     private final IsoNavigationPlayerController navigation;
+    private SubtitleOffsets subtitleOffsets = SubtitleOffsets.ZERO;
     private final ExoPlaybackLog playbackLog = new ExoPlaybackLog();
     private final Runnable updateLog = this::updateEventLogger;
     private final Runnable logListener = () -> App.post(updateLog);
@@ -150,7 +151,7 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
 
     @Override
     public DiscMenuController getDiscMenuController() {
-        return navigation;
+        return null;
     }
 
     @Override
@@ -309,7 +310,7 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
 
     @Override
     public void bindPlayerView(PlayerView playerView) {
-        playerView.setBackendPlayer(player);
+        playerView.setPlayer(player);
         subtitles.bindPlayerView(playerView);
     }
 
@@ -335,12 +336,12 @@ public class ExoPlayerEngine implements PlayerEngine, AnalyticsListener {
 
     @Override
     public SubtitleOffsets getSubtitleOffsets() {
-        return player.getSubtitleOffsets();
+        return subtitleOffsets;
     }
 
     @Override
     public void setSubtitleOffsets(SubtitleOffsets offsets) {
-        player.setSubtitleOffsets(offsets);
+        subtitleOffsets = offsets == null ? SubtitleOffsets.ZERO : offsets;
     }
 
     @Override

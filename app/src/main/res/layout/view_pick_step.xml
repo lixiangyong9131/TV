@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingBottom="12dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/mark"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:background="@drawable/bg_pick_pill_idle"
+        android:gravity="center"
+        android:textColor="@color/ink"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        tools:text="1" />
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/ink"
+            android:textSize="15sp"
+            tools:text="查找同名" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/detail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/muted"
+            android:textSize="13sp"
+            tools:text="已查 3/24 个站点" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_skeleton">
+
+            <View
+                android:id="@+id/bar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_step_bar"
+                android:scaleX="0"
+                android:transformPivotX="0dp" />
+
+        </FrameLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:background="@drawable/bg_pick_pill_idle"
+        android:paddingStart="10dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="4dp"
+        android:textColor="@color/ink"
+        android:textSize="13sp"
+        tools:text="3/24" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

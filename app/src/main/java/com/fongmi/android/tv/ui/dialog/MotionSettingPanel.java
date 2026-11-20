@@ -58,8 +58,7 @@ final class MotionSettingPanel implements Slider.OnSliderTouchListener {
         binding.slider.setLabelFormatter(this::formatRate);
         binding.slider.addOnChangeListener(changeListener);
         binding.slider.addOnSliderTouchListener(this);
-        if (mpv != null) mpv.addMotionInterpolationListener(motionListener);
-        else exo.addListener(motionListener);
+        if (exo != null) exo.addListener(motionListener);
         updateMotion();
     }
 
@@ -68,8 +67,7 @@ final class MotionSettingPanel implements Slider.OnSliderTouchListener {
         binding.slider.setLabelFormatter(null);
         binding.slider.removeOnChangeListener(changeListener);
         binding.slider.removeOnSliderTouchListener(this);
-        if (mpv != null) mpv.removeMotionInterpolationListener(motionListener);
-        else if (exo != null) exo.removeListener(motionListener);
+        if (exo != null) exo.removeListener(motionListener);
     }
 
     @Override
@@ -101,7 +99,8 @@ final class MotionSettingPanel implements Slider.OnSliderTouchListener {
             return;
         }
         pendingFps = fps;
-        ListenableFuture<Void> update = mpv != null ? mpv.setMotionInterpolationFps(fps) : exo.setTargetFps(fps);
+        if (mpv != null) return;
+        ListenableFuture<Void> update = exo.setTargetFps(fps);
         Futures.addCallback(update, Task.callback(result -> onApplied(fps), this::onFailed), MoreExecutors.directExecutor());
     }
 
@@ -139,15 +138,15 @@ final class MotionSettingPanel implements Slider.OnSliderTouchListener {
     }
 
     private boolean isSupported() {
-        return mpv != null ? mpv.isMotionInterpolationSupported() : exo != null && exo.isSupported();
+        return mpv == null && exo != null && exo.isSupported();
     }
 
     private boolean isUpdatePending() {
-        return pendingFps != null || (mpv != null ? mpv.isMotionInterpolationUpdatePending() : exo != null && exo.isUpdatePending());
+        return pendingFps != null || (mpv == null && exo != null && exo.isUpdatePending());
     }
 
     private int getTargetFps() {
-        return mpv != null ? mpv.getMotionInterpolationFps() : exo.getTargetFps();
+        return mpv != null || exo == null ? 0 : exo.getTargetFps();
     }
 
     private String formatRate(float value) {
@@ -157,10 +156,6 @@ final class MotionSettingPanel implements Slider.OnSliderTouchListener {
 
     private String getValueText(boolean supported, int fps) {
         if (!supported) return ResUtil.getString(R.string.player_motion_unavailable);
-        if (mpv != null && pendingFps == null) {
-            float effectiveFps = mpv.getMotionInterpolationEffectiveTargetFps();
-            if (effectiveFps > 0 && effectiveFps < fps - 0.001f) return ResUtil.getString(R.string.player_motion_capped, effectiveFps);
-        }
         return formatRate(fps);
     }
 

@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/shape_vod_list"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:foreground="@drawable/selector_vod">
@@ -15,12 +17,29 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/image"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+        <FrameLayout
+            android:layout_width="64dp"
+            android:layout_height="90dp"
             android:layout_margin="16dp"
-            app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/Vod.Grid.Large" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/score"
+                style="@style/ScoreBadge"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                tools:text="8.7"
+                tools:visibility="visible" />
+        </FrameLayout>
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"

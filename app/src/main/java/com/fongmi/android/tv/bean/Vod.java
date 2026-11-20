@@ -45,9 +45,19 @@ public class Vod implements Parcelable, Diffable<Vod> {
     @Element(name = "pic", required = false)
     @SerializedName("vod_pic")
     private String vodPic;
+    @SerializedName(value = "vod_pic_slide", alternate = {"pic_slide"})
+    private String vodPicSlide;
     @Element(name = "note", required = false)
     @SerializedName("vod_remarks")
     private String vodRemarks;
+    @SerializedName("vod_douban_score")
+    private String doubanScore;
+    @SerializedName(value = "vod_score", alternate = {"score", "rating", "vod_rating", "rate"})
+    private String vodScore;
+    @SerializedName("vod_douban_pic")
+    private String doubanPic;
+    @SerializedName("vod_douban_cast")
+    private String doubanCast;
     @Element(name = "year", required = false)
     @SerializedName("vod_year")
     private String vodYear;
@@ -162,8 +172,32 @@ public class Vod implements Parcelable, Diffable<Vod> {
         this.vodPic = vodPic;
     }
 
+    public String getPicSlide() {
+        return TextUtils.isEmpty(vodPicSlide) ? "" : vodPicSlide.trim();
+    }
+
     public String getRemarks() {
         return TextUtils.isEmpty(vodRemarks) ? "" : vodRemarks.trim();
+    }
+
+    public String getDoubanScore() {
+        return TextUtils.isEmpty(doubanScore) ? "" : doubanScore.trim();
+    }
+
+    public String getVodScore() {
+        return TextUtils.isEmpty(vodScore) ? "" : vodScore.trim();
+    }
+
+    public String getScoreBadge() {
+        return com.fongmi.android.tv.utils.VodScores.badge(this);
+    }
+
+    public String getDoubanPic() {
+        return TextUtils.isEmpty(doubanPic) ? "" : doubanPic.trim();
+    }
+
+    public String getDoubanCast() {
+        return TextUtils.isEmpty(doubanCast) ? "" : doubanCast.trim();
     }
 
     public String getYear() {

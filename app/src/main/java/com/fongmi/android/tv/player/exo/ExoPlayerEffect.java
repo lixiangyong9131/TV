@@ -32,7 +32,7 @@ public final class ExoPlayerEffect implements PlayerEffect {
     }
 
     public AudioProcessor getAudioProcessor() {
-        return audioEffectController.getProcessor();
+        return null;
     }
 
     public void setPlayer(ExoPlayer player) {
