@@ -3,6 +3,7 @@ package com.fongmi.android.tv.ui.custom;
 import android.annotation.SuppressLint;
 
 import androidx.leanback.widget.FocusHighlight;
+import androidx.leanback.widget.GridLayoutManager;
 import androidx.leanback.widget.HorizontalGridView;
 import androidx.leanback.widget.ItemBridgeAdapter;
 import androidx.leanback.widget.ListRowPresenter;
@@ -46,7 +47,9 @@ public class CustomRowPresenter extends ListRowPresenter {
         ViewHolder vh = (ViewHolder) holder;
         HorizontalGridView grid = vh.getGridView();
         grid.setFocusScrollStrategy(strategy);
-        grid.setFocusOutAllowed(true, true);
+        if (grid.getLayoutManager() instanceof GridLayoutManager layoutManager) {
+            layoutManager.setFocusOutAllowed(true, true);
+        }
         grid.setHorizontalSpacing(ResUtil.dp2px(spacing));
         if (recycledViewPool == null) recycledViewPool = grid.getRecycledViewPool();
         else grid.setRecycledViewPool(recycledViewPool);
