@@ -430,7 +430,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void setLogo() {
-        if (TextUtils.isEmpty(VodConfig.get().getConfig().getLogo())) mBinding.logo.setImageResource(R.drawable.ic_tv_mark);
+        if (TextUtils.isEmpty(VodConfig.get().getConfig().getLogo())) mBinding.logo.setImageResource(R.drawable.ic_logo);
         else ImgUtil.logo(mBinding.logo);
     }
 
