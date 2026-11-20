@@ -64,14 +64,32 @@ jobs:
           sed -i -E "s/versionCode [0-9]+/versionCode ${CODE}/" app/build.gradle
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
           cache: gradle
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          set -euo pipefail
+          : "${ANDROID_HOME:=${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          sm=""
+          for candidate in "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager; do
+            if [ -x "$candidate" ]; then sm="$candidate"; fi
+          done
+          if [ -z "$sm" ]; then
+            echo "sdkmanager not found under $ANDROID_HOME"
+            ls -la "$ANDROID_HOME" || true
+            ls -la "$ANDROID_HOME/cmdline-tools" || true
+            exit 1
+          fi
+          echo "Using $sm"
+          yes | "$sm" --licenses >/dev/null || true
+          "$sm" "platforms;android-37" "build-tools;37.0.0" "platform-tools"
 
       - name: Download Media3 libraries
         env:
