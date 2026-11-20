@@ -84,7 +84,10 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
         mBinding.incognitoText.setText(Setting.getSwitch(Setting.isIncognito()));
-        mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[PlayerSetting.getSize()]);
+        size = ResUtil.getStringArray(R.array.select_size);
+        int saved = PlayerSetting.getSize();
+        if (saved == 0) PlayerSetting.putSize(saved = 1);
+        mBinding.sizeText.setText(size[saved]);
     }
 
     private void setCacheText() {
@@ -253,6 +256,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
 
     private void setSize(View view) {
         int index = (PlayerSetting.getSize() + 1) % size.length;
+        if (index == 0) index = 1;
         mBinding.sizeText.setText(size[index]);
         PlayerSetting.putSize(index);
         RefreshEvent.size();

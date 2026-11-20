@@ -187,7 +187,13 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (KeyUtil.isMenuKey(event)) showDialog();
+        if (KeyUtil.isMenuKey(event)) {
+            View current = getCurrentFocus();
+            View inRecord = current == null ? null : mBinding.recordRecycler.findContainingItemView(current);
+            if (inRecord != null) inRecord.performLongClick();
+            else showDialog();
+            return true;
+        }
         if (KeyUtil.isActionDown(event) && findFocus(event)) return true;
         return super.dispatchKeyEvent(event);
     }
@@ -264,8 +270,12 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
             mBinding.keyword.requestFocus();
             return true;
         }
-        if (KeyUtil.isLeftKey(event) && isFirstInRow(mBinding.keyboard, item)) return true;
-        return KeyUtil.isDownKey(event) && isLastRow(mBinding.keyboard, item);
+        if (KeyUtil.isLeftKey(event) && isFirstInRow(mBinding.keyboard, item)) {
+            mBinding.mic.requestFocus();
+            return true;
+        }
+        if (KeyUtil.isDownKey(event) && isLastRow(mBinding.keyboard, item)) return focusFirst(mBinding.wordRecycler);
+        return false;
     }
 
     private boolean handleWordKey(KeyEvent event, View item) {
@@ -280,6 +290,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
                     return true;
                 }
             }
+            mBinding.keyword.requestFocus();
             return true;
         }
         return false;
@@ -309,7 +320,14 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
     protected void onResume() {
         super.onResume();
         mBinding.mic.setFocusable(true);
-        mBinding.keyword.requestFocus();
+        View focus = getCurrentFocus();
+        if (focus == null || focus == mBinding.keyword) mBinding.keyboard.post(this::focusKeyboard);
+    }
+
+    private void focusKeyboard() {
+        if (mBinding.keyboard.getChildCount() > 0) mBinding.keyboard.getChildAt(0).requestFocus();
+        else if (mBinding.wordRecycler.getChildCount() > 0) mBinding.wordRecycler.getChildAt(0).requestFocus();
+        else mBinding.keyword.requestFocus();
     }
 
     @Override

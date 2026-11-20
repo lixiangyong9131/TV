@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="48dp">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
@@ -55,23 +55,24 @@
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/vodHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:layout_marginEnd="16dp"
                 android:background="@drawable/selector_item"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:padding="8dp"
+                android:padding="14dp"
                 android:src="@drawable/ic_setting_home" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/vodHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="12dp"
                 android:background="@drawable/selector_item"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:padding="8dp"
+                android:padding="14dp"
                 android:src="@drawable/ic_setting_history" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
@@ -120,23 +121,24 @@
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/liveHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:layout_marginEnd="16dp"
                 android:background="@drawable/selector_item"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:padding="8dp"
+                android:padding="14dp"
                 android:src="@drawable/ic_setting_home" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/liveHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="12dp"
                 android:background="@drawable/selector_item"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:padding="8dp"
+                android:padding="14dp"
                 android:src="@drawable/ic_setting_history" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
@@ -186,25 +188,26 @@
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/wallDefault"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:layout_marginEnd="16dp"
                 android:background="@drawable/selector_item"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:nextFocusDown="@id/danmaku"
-                android:padding="8dp"
+                android:padding="14dp"
                 android:src="@drawable/ic_setting_home" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/wallRefresh"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="12dp"
                 android:background="@drawable/selector_item"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:nextFocusDown="@id/danmaku"
-                android:padding="8dp"
+                android:padding="14dp"
                 android:src="@drawable/ic_setting_refresh" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>

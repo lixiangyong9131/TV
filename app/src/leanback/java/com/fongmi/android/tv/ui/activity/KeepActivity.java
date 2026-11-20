@@ -3,11 +3,13 @@ package com.fongmi.android.tv.ui.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.Product;
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Keep;
@@ -17,6 +19,7 @@ import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.ui.adapter.KeepAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
+import com.fongmi.android.tv.utils.KeyUtil;
 import com.fongmi.android.tv.utils.Notify;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -40,6 +43,16 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     protected void initView(Bundle savedInstanceState) {
         setRecyclerView();
         getKeep();
+        mBinding.edit.setOnClickListener(v -> toggleDelete());
+    }
+
+    private void toggleDelete() {
+        setDeleteMode(!mAdapter.isDelete());
+    }
+
+    private void setDeleteMode(boolean delete) {
+        mAdapter.setDelete(delete);
+        mBinding.edit.setText(delete ? R.string.dialog_negative : R.string.history_delete);
     }
 
     private void setRecyclerView() {
@@ -84,19 +97,28 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     @Override
     public void onItemDelete(Keep item) {
         mAdapter.remove(item.delete(), () -> {
-            if (mAdapter.getItemCount() == 0) mAdapter.setDelete(false);
+            if (mAdapter.getItemCount() == 0) setDeleteMode(false);
         });
     }
 
     @Override
     public boolean onLongClick() {
-        mAdapter.setDelete(true);
+        setDeleteMode(true);
         return true;
     }
 
     @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (KeyUtil.isMenuKey(event)) {
+            toggleDelete();
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
     protected void onBackInvoked() {
-        if (mAdapter.isDelete()) mAdapter.setDelete(false);
+        if (mAdapter.isDelete()) setDeleteMode(false);
         else super.onBackInvoked();
     }
 }

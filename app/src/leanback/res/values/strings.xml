@@ -7,7 +7,7 @@
     <string name="home_keep">Keep</string>
     <string name="home_push">Connect</string>
     <string name="home_setting">Setting</string>
-    <string name="home_history">History</string>
+    <string name="home_history">Continue Watching</string>
     <string name="home_recommend">Recommend</string>
 
     <!-- Collect -->
@@ -19,5 +19,8 @@
     <string name="dialog_action_clear_all">Clear selection</string>
     <string name="dialog_action_grid">Switch to grid</string>
     <string name="dialog_action_list">Switch to list</string>
+    <string name="history_delete">Delete</string>
+    <string name="play_more">More</string>
+    <string name="play_more_close">Less</string>
 
 </resources>

@@ -17,7 +17,9 @@
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textColor="@color/text"
-        android:textSize="16sp"
+        android:minHeight="56dp"
+        android:gravity="center_vertical"
+        android:textSize="22sp"
         tools:text="收藏" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

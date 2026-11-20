@@ -1,6 +1,7 @@
 package com.fongmi.android.tv.ui.adapter;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
     private final int maxWidth;
     private int nextFocusDown;
     private int nextFocusUp;
+    private int rows = 1;
 
     public EpisodeAdapter(OnClickListener listener) {
         mListener = listener;
@@ -70,6 +72,10 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    public void setGridRows(int rows) {
+        this.rows = Math.max(1, rows);
+    }
+
     @Override
     public int getItemCount() {
         return mItems.size();
@@ -84,9 +90,10 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Episode item = mItems.get(position);
+        int row = position % rows;
         holder.binding.text.setMaxWidth(maxWidth);
-        holder.binding.text.setNextFocusUpId(nextFocusUp);
-        holder.binding.text.setNextFocusDownId(nextFocusDown);
+        holder.binding.text.setNextFocusUpId(row == 0 && nextFocusUp != 0 ? nextFocusUp : View.NO_ID);
+        holder.binding.text.setNextFocusDownId(row == rows - 1 && nextFocusDown != 0 ? nextFocusDown : View.NO_ID);
         holder.binding.text.setSelected(item.isSelected());
         holder.binding.text.setText(item.getDesc().concat(item.getName()));
         holder.binding.getRoot().setOnClickListener(v -> mListener.onItemClick(item));

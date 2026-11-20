@@ -366,6 +366,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         mBinding.control.action.discMenu.setOnClickListener(this::onDiscMenu);
         mBinding.control.action.discMenu.setOnLongClickListener(this::onDiscMenuLong);
         mBinding.control.action.opening.setOnClickListener(view -> onOpening());
+        mBinding.control.action.more.setOnClickListener(view -> toggleMoreControls());
         mBinding.control.action.speed.setOnLongClickListener(view -> onSpeedLong());
         mBinding.control.action.ending.setOnLongClickListener(view -> onEndingReset());
         mBinding.control.action.opening.setOnLongClickListener(view -> onOpeningReset());
@@ -395,6 +396,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         mBinding.flag.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         mBinding.flag.setAdapter(mFlagAdapter = new FlagAdapter(this));
         mBinding.episode.setHorizontalSpacing(ResUtil.dp2px(8));
+        mBinding.episode.setVerticalSpacing(ResUtil.dp2px(8));
         mBinding.episode.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         mBinding.episode.setAdapter(mEpisodeAdapter = new EpisodeAdapter(this));
         mBinding.quality.setHorizontalSpacing(ResUtil.dp2px(8));
@@ -865,10 +867,40 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private void setEpisodeAdapter(List<Episode> items) {
+        int rows = episodeRows(items.size());
+        mBinding.episode.setNumRows(rows);
+        mEpisodeAdapter.setGridRows(rows);
+        ViewGroup.LayoutParams params = mBinding.episode.getLayoutParams();
+        int spacing = ResUtil.dp2px(8);
+        params.height = rows * ResUtil.dp2px(52) + Math.max(0, rows - 1) * spacing;
+        mBinding.episode.setLayoutParams(params);
         mBinding.episode.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
         mEpisodeAdapter.addAll(items);
         setArrayAdapter(items.size());
         setR2Callback();
+    }
+
+    private int episodeRows(int count) {
+        if (count <= 1) return 1;
+        if (count <= 8) return 2;
+        return 3;
+    }
+
+    private void toggleMoreControls() {
+        boolean show = mBinding.control.action.extra.getVisibility() != View.VISIBLE;
+        mBinding.control.action.extra.setVisibility(show ? View.VISIBLE : View.GONE);
+        mBinding.control.action.more.setText(show ? R.string.play_more_close : R.string.play_more);
+        View target = show ? firstExtraControl() : mBinding.control.action.more;
+        if (target != null) target.requestFocus();
+    }
+
+    private View firstExtraControl() {
+        ViewGroup extra = mBinding.control.action.extra;
+        for (int i = 0; i < extra.getChildCount(); i++) {
+            View child = extra.getChildAt(i);
+            if (child.getVisibility() == View.VISIBLE && child.isFocusable()) return child;
+        }
+        return mBinding.control.action.more;
     }
 
     @Override

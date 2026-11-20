@@ -4,16 +4,16 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import androidx.leanback.widget.ArrayObjectAdapter;
-import androidx.leanback.widget.FocusHighlight;
 import androidx.leanback.widget.HorizontalGridView;
 import androidx.leanback.widget.ItemBridgeAdapter;
 import androidx.leanback.widget.ListRow;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.Product;
@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class TypeFragment extends BaseFragment implements CustomScroller.Callback, VodPresenter.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
+public class TypeFragment extends BaseFragment implements CustomScroller.Callback, VodPresenter.OnClickListener {
 
     private HashMap<String, String> mExtends;
     private FragmentTypeBinding mBinding;
@@ -120,7 +120,6 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
 
     @Override
     protected void initEvent() {
-        mBinding.swipeLayout.setOnRefreshListener(this);
         mBinding.recycler.addOnScrollListener(mScroller);
     }
 
@@ -129,7 +128,6 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         CustomSelector selector = new CustomSelector();
         selector.addPresenter(Vod.class, new VodPresenter(this, Style.list()));
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), VodPresenter.class);
-        selector.addPresenter(ListRow.class, new CustomRowPresenter(8, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ALIGNED), FilterPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
         mBinding.recycler.setHeader(getActivity(), R.id.recycler);
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
@@ -168,7 +166,6 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         boolean flag = mExtends.isEmpty();
         int size = result.getList().size();
         mBinding.progressLayout.showContent(first & flag, size);
-        mBinding.swipeLayout.setRefreshing(false);
         mScroller.endLoading(result);
         if (size > 0) addVideo(result);
     }
@@ -212,23 +209,41 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         return new ListRow(mLast);
     }
 
-    private ListRow getRow(Filter filter) {
+    private HorizontalGridView createFilterRow(Filter filter) {
+        HorizontalGridView row = new HorizontalGridView(requireContext());
+        row.setHorizontalSpacing(ResUtil.dp2px(12));
+        row.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        row.setClipChildren(false);
+        row.setClipToPadding(false);
+        row.setFocusable(false);
+        row.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
         FilterPresenter presenter = new FilterPresenter(filter.getKey());
         ArrayObjectAdapter adapter = new ArrayObjectAdapter(presenter);
         presenter.setOnClickListener((key, item) -> setClick(adapter, key, item));
         adapter.setItems(filter.getValue(), null);
-        return new ListRow(adapter);
+        row.setAdapter(new ItemBridgeAdapter(adapter));
+        return row;
     }
 
     private void showFilter() {
-        List<ListRow> rows = new ArrayList<>();
-        for (Filter filter : mFilters) rows.add(getRow(filter));
-        mBinding.recycler.postDelayed(() -> mBinding.recycler.scrollToPosition(0), 48);
-        mAdapter.addAll(0, rows);
+        LinearLayout box = mBinding.filterBox;
+        box.removeAllViews();
+        for (Filter filter : mFilters) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ResUtil.dp2px(64));
+            params.bottomMargin = ResUtil.dp2px(8);
+            box.addView(createFilterRow(filter), params);
+        }
+        box.setVisibility(ViewGroup.VISIBLE);
+        box.post(() -> box.post(() -> {
+            if (box.getChildCount() == 0) return;
+            ViewGroup row = (ViewGroup) box.getChildAt(0);
+            if (row.getChildCount() > 0) row.getChildAt(0).requestFocus();
+        }));
     }
 
     private void hideFilter() {
-        mAdapter.removeItems(0, mFilters.size());
+        mBinding.filterBox.removeAllViews();
+        mBinding.filterBox.setVisibility(ViewGroup.GONE);
     }
 
     public void toggleFilter(boolean visible) {
@@ -239,11 +254,8 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     }
 
     private void checkFilter() {
-        int adapterSize = mAdapter.size();
-        int filterSize = filterVisible ? mFilters.size() : 0;
-        if (adapterSize > filterSize) mAdapter.removeItems(filterSize, mAdapter.size() - filterSize);
-        if (adapterSize == 0) mBinding.progressLayout.showProgress();
-        else mBinding.swipeLayout.setRefreshing(true);
+        if (mAdapter.size() > 0) mAdapter.removeItems(0, mAdapter.size());
+        mBinding.progressLayout.showProgress();
     }
 
     public void onRefresh() {
@@ -283,18 +295,8 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (hidden) {
-            mBinding.recycler.showHeader();
-        } else {
-            if (headerVisible) mBinding.recycler.showHeader();
-            else mBinding.recycler.hideHeader();
-            mBinding.recycler.requestFocus();
-        }
-    }
-
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        moveToTop();
+        if (mBinding == null) return;
+        if (hidden || headerVisible) mBinding.recycler.showHeader();
+        else mBinding.recycler.hideHeader();
     }
 }

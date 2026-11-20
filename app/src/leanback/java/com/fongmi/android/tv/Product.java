@@ -11,7 +11,9 @@ public class Product {
     }
 
     public static int getColumn() {
-        return Math.abs(PlayerSetting.getSize() - 7);
+        // Phone size 0 used to mean 7 columns and the default (2) meant 5.
+        // A living-room grid stays at 4 across, or 3 for the largest preset.
+        return PlayerSetting.getSize() >= 3 ? 3 : 4;
     }
 
     public static int getColumn(Style style) {

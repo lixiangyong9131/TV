@@ -89,6 +89,9 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
         setTypes();
         setPager();
         setViewModel();
+        mBinding.recycler.post(() -> {
+            if (getCurrentFocus() == null) mBinding.recycler.requestFocus();
+        });
     }
 
     @Override
@@ -108,7 +111,6 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
     }
 
     private void setRecyclerView() {
-        mBinding.recycler.requestFocus();
         mBinding.recycler.setHorizontalSpacing(ResUtil.dp2px(16));
         mBinding.recycler.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         mBinding.recycler.setAdapter(mAdapter = new TypeAdapter(this));
@@ -139,7 +141,17 @@ public class VodActivity extends BaseActivity implements TypeAdapter.OnClickList
 
     private void selectCategory(int position) {
         mBinding.recycler.setSelectedPosition(position);
+        if (mBinding.recycler.hasFocus() || isInPager(getCurrentFocus())) return;
         mBinding.recycler.requestFocus();
+    }
+
+    private boolean isInPager(View focus) {
+        View current = focus;
+        while (current != null) {
+            if (current == mBinding.pager) return true;
+            current = current.getParent() instanceof View parent ? parent : null;
+        }
+        return false;
     }
 
     private void onChildSelected(@Nullable RecyclerView.ViewHolder child) {

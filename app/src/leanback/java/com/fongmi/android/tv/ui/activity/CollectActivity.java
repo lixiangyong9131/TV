@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -28,7 +29,9 @@ import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.adapter.CollectAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.ui.fragment.CollectFragment;
+import com.fongmi.android.tv.utils.KeyUtil;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.gson.reflect.TypeToken;
 
@@ -87,6 +90,7 @@ public class CollectActivity extends BaseActivity {
             @Override
             public void onPageSelected(int position) {
                 mBinding.recycler.setSelectedPosition(position);
+                if (mBinding.recycler.hasFocus() || isInPager(getCurrentFocus())) return;
                 mBinding.recycler.requestFocus();
             }
         });
@@ -151,6 +155,24 @@ public class CollectActivity extends BaseActivity {
             mBinding.pager.setCurrentItem(mBinding.recycler.getSelectedPosition());
         }
     };
+
+    private boolean isInPager(View focus) {
+        View current = focus;
+        while (current != null) {
+            if (current == mBinding.pager) return true;
+            current = current.getParent() instanceof View parent ? parent : null;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (KeyUtil.isMenuKey(event)) {
+            SiteDialog.create().search().show(this);
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
 
     @Override
     protected void onBackInvoked() {

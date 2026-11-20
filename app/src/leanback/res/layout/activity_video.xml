@@ -19,7 +19,7 @@
         android:nextFocusLeft="@id/video"
         android:nextFocusRight="@id/content"
         android:nextFocusUp="@id/video"
-        android:nextFocusDown="@id/flag">
+        android:nextFocusDown="@id/content">
 
         <androidx.media3.ui.PlayerView
             android:id="@+id/player"
@@ -134,10 +134,14 @@
         android:layout_alignStart="@+id/name"
         android:layout_marginTop="6dp"
         android:layout_marginEnd="24dp"
-        android:nextFocusDown="@id/actor"
+        android:background="@drawable/selector_item"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusUp="@id/video"
+        android:nextFocusDown="@id/content"
         android:singleLine="true"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="18sp"
         tools:text="導演：FongMi" />
 
     <com.google.android.material.textview.MaterialTextView
@@ -148,11 +152,15 @@
         android:layout_alignStart="@+id/name"
         android:layout_marginTop="6dp"
         android:layout_marginEnd="24dp"
+        android:background="@drawable/selector_item"
         android:ellipsize="end"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:maxLines="2"
+        android:nextFocusUp="@id/video"
         android:nextFocusDown="@id/content"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="18sp"
         tools:text="演員：FongMi" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -173,7 +181,7 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center"
-            android:nextFocusUp="@id/actor"
+            android:nextFocusUp="@id/video"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
             android:text="@string/detail_desc"
@@ -191,7 +199,7 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center"
-            android:nextFocusUp="@id/actor"
+            android:nextFocusUp="@id/video"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
             android:text="@string/keep"
@@ -209,7 +217,7 @@
             android:focusableInTouchMode="true"
             android:gravity="center"
             android:nextFocusRight="@id/change"
-            android:nextFocusUp="@id/actor"
+            android:nextFocusUp="@id/video"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
             android:text="@string/play_change"
@@ -228,7 +236,7 @@
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingBottom="8dp">
 
@@ -239,8 +247,8 @@
                 android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
                 android:visibility="gone"
                 tools:visibility="visible" />
 
@@ -251,8 +259,8 @@
                 android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
                 android:visibility="gone"
                 tools:visibility="visible" />
 
@@ -263,8 +271,8 @@
                 android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
                 android:visibility="gone" />
 
             <androidx.leanback.widget.HorizontalGridView
@@ -274,8 +282,8 @@
                 android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
                 android:visibility="gone" />
 
             <androidx.leanback.widget.HorizontalGridView
@@ -285,8 +293,8 @@
                 android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
                 android:visibility="gone" />
 
             <androidx.leanback.widget.HorizontalGridView
@@ -296,8 +304,8 @@
                 android:layout_marginBottom="16dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
                 android:visibility="gone" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>

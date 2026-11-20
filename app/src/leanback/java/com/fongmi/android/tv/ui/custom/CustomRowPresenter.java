@@ -46,6 +46,7 @@ public class CustomRowPresenter extends ListRowPresenter {
         ViewHolder vh = (ViewHolder) holder;
         HorizontalGridView grid = vh.getGridView();
         grid.setFocusScrollStrategy(strategy);
+        grid.setFocusOutFront(true);
         grid.setHorizontalSpacing(ResUtil.dp2px(spacing));
         if (recycledViewPool == null) recycledViewPool = grid.getRecycledViewPool();
         else grid.setRecycledViewPool(recycledViewPool);
