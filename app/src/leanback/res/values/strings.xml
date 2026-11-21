@@ -15,6 +15,8 @@
     <string name="mine_version">Current version</string>
     <string name="home_history">History</string>
     <string name="home_recommend">Recommend</string>
+    <string name="hero_series">ORIGINAL</string>
+    <string name="hero_play">▶  Play</string>
 
     <!-- Collect -->
     <string name="collect_result">Search results for <xliff:g name="name">%s</xliff:g></string>

@@ -3,12 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/black">
 
+    <!-- 主内容区：左侧留出导航栏空间 -->
     <com.fongmi.android.tv.ui.custom.ProgressLayout
         android:id="@+id/progressLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginStart="104dp">
 
         <androidx.leanback.widget.VerticalGridView
             android:id="@+id/recycler"
@@ -17,7 +20,7 @@
             android:clipChildren="false"
             android:clipToPadding="false"
             android:paddingStart="24dp"
-            android:paddingTop="88dp"
+            android:paddingTop="100dp"
             android:paddingEnd="24dp"
             android:paddingBottom="24dp"
             app:focusOutEnd="true"
@@ -25,10 +28,12 @@
 
     </com.fongmi.android.tv.ui.custom.ProgressLayout>
 
+    <!-- 顶部信息条 -->
     <FrameLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="104dp">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/toolbar"
@@ -38,17 +43,17 @@
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="24dp"
-            android:paddingTop="24dp"
+            android:paddingTop="20dp"
             android:paddingEnd="24dp"
             android:paddingBottom="8dp">
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/logo"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_marginEnd="12dp"
                 android:src="@drawable/ic_logo"
-                android:visibility="gone" />
+                android:visibility="visible" />
 
             <com.fongmi.android.tv.ui.custom.CustomTitleView
                 android:id="@+id/title"
@@ -61,15 +66,101 @@
                 android:singleLine="true"
                 android:text="@string/app_name"
                 android:textColor="@color/white"
-                android:textSize="24sp" />
+                android:textSize="22sp" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/clock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
-                android:textSize="24sp"
+                android:textSize="22sp"
                 tools:text="09:20:00" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </FrameLayout>
+
+    <!-- 左侧竖排图标导航（Netflix TV 风格） -->
+    <LinearLayout
+        android:id="@+id/sideNav"
+        android:layout_width="104dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start|center_vertical"
+        android:background="@drawable/bg_side_nav"
+        android:gravity="center_horizontal|center_vertical"
+        android:orientation="vertical"
+        android:paddingTop="80dp"
+        android:paddingBottom="24dp">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/nav_home"
+            android:layout_width="@dimen/nav_item_size"
+            android:layout_height="@dimen/nav_item_size"
+            android:layout_marginBottom="@dimen/nav_item_gap"
+            android:background="@drawable/selector_item"
+            android:contentDescription="@string/home_vod"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_func_vod"
+            android:tint="@color/selector_func" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/nav_live"
+            android:layout_width="@dimen/nav_item_size"
+            android:layout_height="@dimen/nav_item_size"
+            android:layout_marginBottom="@dimen/nav_item_gap"
+            android:background="@drawable/selector_item"
+            android:contentDescription="@string/home_live"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_func_live"
+            android:tint="@color/selector_func" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/nav_search"
+            android:layout_width="@dimen/nav_item_size"
+            android:layout_height="@dimen/nav_item_size"
+            android:layout_marginBottom="@dimen/nav_item_gap"
+            android:background="@drawable/selector_item"
+            android:contentDescription="@string/home_search"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_func_search"
+            android:tint="@color/selector_func" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/nav_keep"
+            android:layout_width="@dimen/nav_item_size"
+            android:layout_height="@dimen/nav_item_size"
+            android:layout_marginBottom="@dimen/nav_item_gap"
+            android:background="@drawable/selector_item"
+            android:contentDescription="@string/home_keep"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_func_keep"
+            android:tint="@color/selector_func" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/nav_push"
+            android:layout_width="@dimen/nav_item_size"
+            android:layout_height="@dimen/nav_item_size"
+            android:layout_marginBottom="@dimen/nav_item_gap"
+            android:background="@drawable/selector_item"
+            android:contentDescription="@string/home_push"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_func_connect"
+            android:tint="@color/selector_func" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/nav_setting"
+            android:layout_width="@dimen/nav_item_size"
+            android:layout_height="@dimen/nav_item_size"
+            android:background="@drawable/selector_item"
+            android:contentDescription="@string/home_setting"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_func_setting"
+            android:tint="@color/selector_func" />
+
+    </LinearLayout>
+
 </FrameLayout>

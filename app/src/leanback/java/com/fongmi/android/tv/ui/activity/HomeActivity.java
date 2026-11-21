@@ -33,6 +33,7 @@ import com.fongmi.android.tv.api.node.NodeRuntime;
 import com.fongmi.android.tv.bean.Cache;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Func;
+import com.fongmi.android.tv.bean.Hero;
 import com.fongmi.android.tv.bean.History;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
@@ -59,6 +60,7 @@ import com.fongmi.android.tv.ui.custom.CustomTitleView;
 import com.fongmi.android.tv.ui.dialog.LocalConnectDialog;
 import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.ui.presenter.FuncPresenter;
+import com.fongmi.android.tv.ui.presenter.HeroPresenter;
 import com.fongmi.android.tv.ui.presenter.HeaderPresenter;
 import com.fongmi.android.tv.ui.presenter.HistoryPresenter;
 import com.fongmi.android.tv.ui.presenter.ProgressPresenter;
@@ -92,6 +94,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private ActivityHomeBinding mBinding;
     private ArrayObjectAdapter mHistoryAdapter;
     private ArrayObjectAdapter mFuncAdapter;
+    private ArrayObjectAdapter mHeroAdapter;
     private ArrayObjectAdapter mAdapter;
     private HistoryPresenter mPresenter;
     private VodPresenter mVodPresenter;
@@ -147,7 +150,28 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         setRecyclerView();
         setViewModel();
         setAdapter();
+        initSideNav();
         checkPermission();
+    }
+
+    /**
+     * Netflix-style left vertical navigation bar. Each icon dispatches to the
+     * same feature as the old Func row, kept as a persistent rail.
+     */
+    private void initSideNav() {
+        mBinding.navHome.setOnClickListener(v -> onItemClick(Func.create(R.string.home_vod)));
+        mBinding.navLive.setOnClickListener(v -> onItemClick(Func.create(R.string.home_live)));
+        mBinding.navSearch.setOnClickListener(v -> onItemClick(Func.create(R.string.home_search)));
+        mBinding.navKeep.setOnClickListener(v -> onItemClick(Func.create(R.string.home_keep)));
+        mBinding.navPush.setOnClickListener(v -> onItemClick(Func.create(R.string.home_push)));
+        mBinding.navSetting.setOnClickListener(v -> onItemClick(Func.create(R.string.home_setting)));
+        // Focus moves from the nav rail into the content rows on the right.
+        View[] navItems = {mBinding.navHome, mBinding.navLive, mBinding.navSearch, mBinding.navKeep, mBinding.navPush, mBinding.navSetting};
+        for (int i = 0; i < navItems.length; i++) {
+            navItems[i].setNextFocusRightId(R.id.recycler);
+            navItems[i].setNextFocusDownId(i < navItems.length - 1 ? navItems[i + 1].getId() : navItems[i].getId());
+            navItems[i].setNextFocusUpId(i > 0 ? navItems[i - 1].getId() : navItems[i].getId());
+        }
     }
 
     @Override
@@ -190,6 +214,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         selector.addPresenter(Integer.class, new HeaderPresenter());
         selector.addPresenter(String.class, new ProgressPresenter());
         selector.addPresenter(Vod.class, new VodPresenter(this, Style.list()));
+        selector.addPresenter(ListRow.class, new CustomRowPresenter(16), HeroPresenter.class);
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), VodPresenter.class);
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), FuncPresenter.class);
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_SMALL, HorizontalGridView.FOCUS_SCROLL_ALIGNED), HistoryPresenter.class);
@@ -207,14 +232,32 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private void onResult(Result result) {
         clearRecommendations();
         addVideo(mResult = result);
+        updateHero(result);
         Cache.clear().put(result);
+    }
+
+    private void updateHero(Result result) {
+        if (mHeroAdapter == null || result.getList().isEmpty()) return;
+        Vod first = result.getList().get(0);
+        mHeroAdapter.replace(0, Hero.create()
+                .name(first.getName())
+                .pic(first.getPic())
+                .desc(first.getContent()));
     }
 
     private void setAdapter() {
         mHistoryAdapter = new ArrayObjectAdapter(mPresenter = new HistoryPresenter(this));
-        mAdapter.add(new ListRow(mFuncAdapter = new ArrayObjectAdapter(new FuncPresenter(this))));
+        mFuncAdapter = new ArrayObjectAdapter(new FuncPresenter(this));
+        mHeroAdapter = new ArrayObjectAdapter(new HeroPresenter(this::openBestOrVod));
+        mHeroAdapter.add(Hero.create().name(getString(R.string.app_name)).desc(getString(R.string.home_recommend)));
+        mAdapter.add(new ListRow(mHeroAdapter));
         mAdapter.add(R.string.home_history);
         mAdapter.add(R.string.home_recommend);
+    }
+
+    private void openBestOrVod() {
+        if (mResult != null && !mResult.getList().isEmpty()) VideoActivity.pick(this, mResult.getList().get(0));
+        else VodActivity.start(this, mResult);
     }
 
     private void checkPermission() {
