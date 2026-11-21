@@ -62,6 +62,7 @@ import com.fongmi.android.tv.ui.presenter.FuncPresenter;
 import com.fongmi.android.tv.ui.presenter.HeaderPresenter;
 import com.fongmi.android.tv.ui.presenter.HistoryPresenter;
 import com.fongmi.android.tv.ui.presenter.ProgressPresenter;
+import com.fongmi.android.tv.ui.presenter.PlaceholderPresenter;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.Clock;
 import com.fongmi.android.tv.utils.ImgUtil;
@@ -223,6 +224,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private void setRecyclerView() {
         CustomSelector selector = new CustomSelector();
         selector.addPresenter(Integer.class, new HeaderPresenter());
+        selector.addPresenter(Boolean.class, new PlaceholderPresenter());
         selector.addPresenter(String.class, new ProgressPresenter());
         selector.addPresenter(Vod.class, new VodPresenter(this, Style.list()));
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_LARGE), VodPresenter.class);
@@ -258,6 +260,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private void setAdapter() {
         mHistoryAdapter = new ArrayObjectAdapter(mPresenter = new HistoryPresenter(this));
         mFuncAdapter = new ArrayObjectAdapter(new FuncPresenter(this));
+        mAdapter.add(Boolean.TRUE); // spacer for the standalone hero banner
         mAdapter.add(R.string.home_history);
         mAdapter.add(R.string.home_recommend);
     }
@@ -368,11 +371,8 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void padHeader() {
-        mBinding.header.post(() -> {
-            // Reserve space for the standalone hero banner above the content rows
-            int top = Math.max(mBinding.header.getHeight(), ResUtil.dp2px(88)) + ResUtil.dp2px(470);
-            mBinding.recycler.setPadding(mBinding.recycler.getPaddingLeft(), top, mBinding.recycler.getPaddingRight(), mBinding.recycler.getPaddingBottom());
-        });
+        // Content rows start below the standalone hero banner; the top padding
+        // is fixed in the layout XML (560dp) so rows never overlap the hero.
     }
 
     private void addGrid(List<Vod> items, Style style) {
