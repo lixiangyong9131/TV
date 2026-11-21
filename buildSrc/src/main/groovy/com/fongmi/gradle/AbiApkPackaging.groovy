@@ -50,6 +50,7 @@ class AbiApkPackaging {
             task.mpvArchive.set(project.layout.projectDirectory.file('libs/lib-mpvplayer-release.aar'))
             task.ffmpegArchive.set(project.layout.projectDirectory.file('libs/lib-decoder-ffmpeg-release.aar'))
             task.abis.set(abis)
+            task.skipCheck.set(project.providers.gradleProperty('skipMpvNativeCheck').map { true }.orElse(false))
         }
         project.tasks.matching { it.name == "merge${variant.name.capitalize()}NativeLibs" }.configureEach { it.dependsOn(validation) }
     }

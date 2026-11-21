@@ -3,6 +3,7 @@ package com.fongmi.gradle
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.PathSensitive
@@ -22,9 +23,12 @@ abstract class VerifyMpvNativeTask extends DefaultTask {
     @Input
     abstract ListProperty<String> getAbis()
 
+    @Input
+    abstract Property<Boolean> getSkipCheck()
+
     @TaskAction
     void verifyNativeLibraries() {
-        if (project.hasProperty("skipMpvNativeCheck")) return
+        if (skipCheck.get()) return
         for (def abi : abis.get()) MpvNativeLibraries.hostLibraries(mpvArchive.get().asFile, ffmpegArchive.get().asFile, abi)
     }
 }
