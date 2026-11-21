@@ -372,6 +372,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         mBinding.keep.setOnClickListener(view -> onKeep());
         mBinding.video.setOnClickListener(view -> onVideo());
         mBinding.change.setOnClickListener(view -> onChange());
+        mBinding.speedTest.setOnClickListener(view -> startSpeedTest());
         mBinding.qualitySwitch.setOnClickListener(view -> mVod.switchQualitySource());
         mBinding.control.action.qualitySwitch.setOnClickListener(view -> mVod.switchQualitySource());
         mBinding.content.setOnClickListener(view -> onContent());
@@ -945,6 +946,11 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     private boolean pickSettled;
     private RankedLine playingRanked;
     private List<RankedLine> rankedLines = List.of();
+
+    private void startSpeedTest() {
+        if (getName().isEmpty()) return;
+        startPick();
+    }
 
     private void startPick() {
         int token = ++pickToken;

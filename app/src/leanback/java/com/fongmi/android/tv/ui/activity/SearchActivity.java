@@ -92,6 +92,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
             }
         });
         mBinding.mic.setOnClickListener(v -> mBinding.mic.start());
+        mBinding.speedTest.setOnClickListener(v -> startSpeedTest());
         mBinding.mic.setListener(this, new CustomTextListener() {
             @Override
             public void onResults(String result) {
@@ -166,13 +167,21 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
         if (size == 0) focusFirst(mBinding.wordRecycler);
     }
 
+    private void startSpeedTest() {
+        if (empty()) return;
+        String keyword = mBinding.keyword.getText().toString().trim();
+        App.post(() -> mRecordAdapter.add(keyword), 250);
+        Util.hideKeyboard(mBinding.keyword);
+        VideoActivity.pick(this, keyword);
+    }
+
     @Override
     public void onSearch() {
         if (empty()) return;
         String keyword = mBinding.keyword.getText().toString().trim();
         App.post(() -> mRecordAdapter.add(keyword), 250);
         Util.hideKeyboard(mBinding.keyword);
-        VideoActivity.pick(this, keyword);
+        CollectActivity.start(this, keyword);
     }
 
     @Override
@@ -255,8 +264,8 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
     private boolean handleKeywordKey(KeyEvent event) {
         if (!KeyUtil.isRightKey(event)) return false;
         if (mBinding.keyword.getSelectionEnd() < mBinding.keyword.getText().length()) return false;
-        boolean hasRecord = mBinding.recordLayout.getVisibility() == View.VISIBLE;
-        return focusFirst(hasRecord ? mBinding.recordRecycler : mBinding.wordRecycler);
+        mBinding.speedTest.requestFocus();
+        return true;
     }
 
     private boolean handleKeyboardKey(KeyEvent event, View item) {

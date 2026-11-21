@@ -408,11 +408,11 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private void setFunc() {
         List<Func> items = new ArrayList<>();
         items.add(Func.create(R.string.home_vod));
+        if (LiveConfig.hasUrl()) items.add(Func.create(R.string.home_live));
         items.add(Func.create(R.string.home_search));
-        items.add(Func.create(R.string.home_live));
         items.add(Func.create(R.string.home_keep));
         items.add(Func.create(R.string.home_push));
-        items.add(Func.create(R.string.home_mine));
+        items.add(Func.create(R.string.home_setting));
         mFuncAdapter.setItems(items, new BaseDiffCallback<Func>());
     }
 
@@ -530,7 +530,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         else if (item.getResId() == R.string.home_keep) KeepActivity.start(this);
         else if (item.getResId() == R.string.home_push) LocalConnectDialog.show(this, "push");
         else if (item.getResId() == R.string.home_search) SearchActivity.start(this);
-        else if (item.getResId() == R.string.home_mine) MineActivity.start(this);
+        else if (item.getResId() == R.string.home_setting) SettingActivity.start(this);
     }
 
     private void openBest(Vod item) {

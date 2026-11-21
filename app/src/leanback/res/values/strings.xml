@@ -1,5 +1,9 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
 
+    <string name="app_name">MEOW</string>
+    <string name="pick_action">Speed test</string>
+
+
     <!-- Home -->
     <string name="home_vod">Vod</string>
     <string name="home_live">Live</string>
