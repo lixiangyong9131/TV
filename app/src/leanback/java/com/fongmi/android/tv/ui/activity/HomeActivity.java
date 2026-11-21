@@ -33,7 +33,6 @@ import com.fongmi.android.tv.api.node.NodeRuntime;
 import com.fongmi.android.tv.bean.Cache;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Func;
-import com.fongmi.android.tv.bean.Hero;
 import com.fongmi.android.tv.bean.History;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
@@ -60,12 +59,12 @@ import com.fongmi.android.tv.ui.custom.CustomTitleView;
 import com.fongmi.android.tv.ui.dialog.LocalConnectDialog;
 import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.ui.presenter.FuncPresenter;
-import com.fongmi.android.tv.ui.presenter.HeroPresenter;
 import com.fongmi.android.tv.ui.presenter.HeaderPresenter;
 import com.fongmi.android.tv.ui.presenter.HistoryPresenter;
 import com.fongmi.android.tv.ui.presenter.ProgressPresenter;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.Clock;
+import com.fongmi.android.tv.utils.ImgUtil;
 import com.fongmi.android.tv.utils.KeyUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PermissionUtil;
@@ -94,7 +93,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private ActivityHomeBinding mBinding;
     private ArrayObjectAdapter mHistoryAdapter;
     private ArrayObjectAdapter mFuncAdapter;
-    private ArrayObjectAdapter mHeroAdapter;
     private ArrayObjectAdapter mAdapter;
     private HistoryPresenter mPresenter;
     private VodPresenter mVodPresenter;
@@ -177,6 +175,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Override
     protected void initEvent() {
         mBinding.title.setListener(this);
+        initHero();
         mBinding.recycler.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
             @Override
             public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
@@ -187,9 +186,21 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
                 mBinding.title.setScaleX(scale);
                 mBinding.title.setScaleY(scale);
                 mBinding.toolbar.setAlpha(1f - 0.2f * factor);
+                // Netflix-like parallax: hero drifts up and fades as content scrolls
+                mBinding.heroBanner.animate().translationY(-factor * 90f).alpha(1f - factor * 0.75f).setDuration(240).start();
                 if (mPresenter.isDelete()) setHistoryDelete(false);
             }
         });
+    }
+
+    /** Wire the standalone hero banner: play button + entrance animation. */
+    private void initHero() {
+        mBinding.heroPlay.setOnClickListener(v -> openBestOrVod());
+        mBinding.heroBanner.setOnClickListener(v -> openBestOrVod());
+        // Entrance fade/slide
+        mBinding.heroBanner.setAlpha(0f);
+        mBinding.heroBanner.setTranslationY(40f);
+        mBinding.heroBanner.animate().alpha(1f).translationY(0f).setDuration(600).setStartDelay(150).start();
     }
 
     private void checkAction(Intent intent) {
@@ -214,8 +225,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         selector.addPresenter(Integer.class, new HeaderPresenter());
         selector.addPresenter(String.class, new ProgressPresenter());
         selector.addPresenter(Vod.class, new VodPresenter(this, Style.list()));
-        selector.addPresenter(ListRow.class, new CustomRowPresenter(16), HeroPresenter.class);
-        selector.addPresenter(ListRow.class, new CustomRowPresenter(16), VodPresenter.class);
+        selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_LARGE), VodPresenter.class);
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), FuncPresenter.class);
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_SMALL, HorizontalGridView.FOCUS_SCROLL_ALIGNED), HistoryPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
@@ -236,21 +246,18 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         Cache.clear().put(result);
     }
 
+    /** Fill the standalone hero banner directly (Netflix-style) with the first recommended title. */
     private void updateHero(Result result) {
-        if (mHeroAdapter == null || result.getList().isEmpty()) return;
+        if (result.getList().isEmpty()) return;
         Vod first = result.getList().get(0);
-        mHeroAdapter.replace(0, Hero.create()
-                .name(first.getName())
-                .pic(first.getPic())
-                .desc(first.getContent()));
+        mBinding.heroTitle.setText(first.getName());
+        mBinding.heroDesc.setText(first.getContent());
+        ImgUtil.load(first.getName(), first.getPic(), mBinding.heroPic);
     }
 
     private void setAdapter() {
         mHistoryAdapter = new ArrayObjectAdapter(mPresenter = new HistoryPresenter(this));
         mFuncAdapter = new ArrayObjectAdapter(new FuncPresenter(this));
-        mHeroAdapter = new ArrayObjectAdapter(new HeroPresenter(this::openBestOrVod));
-        mHeroAdapter.add(Hero.create().name(getString(R.string.app_name)).desc(getString(R.string.home_recommend)));
-        mAdapter.add(new ListRow(mHeroAdapter));
         mAdapter.add(R.string.home_history);
         mAdapter.add(R.string.home_recommend);
     }
@@ -335,7 +342,9 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private void setFocus() {
         mBinding.title.setSelected(true);
         App.post(() -> mBinding.title.setFocusable(true), 500);
-        if (!mBinding.title.hasFocus()) mBinding.recycler.requestFocus();
+        mBinding.heroPlay.setNextFocusDownId(R.id.recycler);
+        mBinding.heroPlay.setNextFocusRightId(R.id.recycler);
+        if (!mBinding.title.hasFocus() && !mBinding.heroPlay.hasFocus()) mBinding.heroPlay.requestFocus();
     }
 
     private void getVideo() {
@@ -360,7 +369,8 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     private void padHeader() {
         mBinding.header.post(() -> {
-            int top = Math.max(mBinding.header.getHeight(), ResUtil.dp2px(88));
+            // Reserve space for the standalone hero banner above the content rows
+            int top = Math.max(mBinding.header.getHeight(), ResUtil.dp2px(88)) + ResUtil.dp2px(470);
             mBinding.recycler.setPadding(mBinding.recycler.getPaddingLeft(), top, mBinding.recycler.getPaddingRight(), mBinding.recycler.getPaddingBottom());
         });
     }
