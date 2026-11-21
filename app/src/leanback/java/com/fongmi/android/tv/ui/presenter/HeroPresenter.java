@@ -27,12 +27,12 @@ public class HeroPresenter extends Presenter {
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent) {
+    public Presenter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent) {
         return new ViewHolder(AdapterHeroBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, Object object) {
+    public void onBindViewHolder(@NonNull Presenter.ViewHolder viewHolder, Object object) {
         AdapterHeroBinding binding = ((ViewHolder) viewHolder).binding;
         Hero hero = (Hero) object;
         current = hero;
@@ -52,7 +52,7 @@ public class HeroPresenter extends Presenter {
     }
 
     @Override
-    public void onUnbindViewHolder(@NonNull ViewHolder viewHolder) {
+    public void onUnbindViewHolder(@NonNull Presenter.ViewHolder viewHolder) {
     }
 
     public static class ViewHolder extends Presenter.ViewHolder {
