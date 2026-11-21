@@ -90,16 +90,24 @@ public class Config {
         AppDatabase.get().getConfigDao().delete(url, type);
     }
 
+    /**
+     * Default sources baked into the TV build. The Feimao endpoint is the
+     * provider's official primary address; it serves the encrypted config
+     * to TVBox clients and the live channels as well.
+     */
+    private static final String DEFAULT_SOURCE_URL = "http://肥猫.net";
+    private static final String DEFAULT_SOURCE_NAME = "肥猫";
+
     public static Config vod() {
         Config item = AppDatabase.get().getConfigDao().findOne(0);
-        return item == null ? create(0) : item;
+        return item == null ? create(0, DEFAULT_SOURCE_URL, DEFAULT_SOURCE_NAME) : item;
     }
 
     public static Config live() {
         String url = Prefers.getString("config_1");
         Config item = TextUtils.isEmpty(url) ? null : AppDatabase.get().getConfigDao().find(url, 1);
         if (item == null) item = AppDatabase.get().getConfigDao().findOne(1);
-        return item == null ? create(1) : item;
+        return item == null ? create(1, DEFAULT_SOURCE_URL, DEFAULT_SOURCE_NAME) : item;
     }
 
     public static Config wall() {
