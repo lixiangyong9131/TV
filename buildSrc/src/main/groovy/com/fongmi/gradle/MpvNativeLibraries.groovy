@@ -13,24 +13,40 @@ class MpvNativeLibraries {
 
     static Map<String, String> hostLibraries(File mpvArchive, File ffmpegArchive, String abi) {
         def hashes = [:]
+        boolean splitFfmpeg = false
+        new ZipFile(ffmpegArchive).withCloseable { archive ->
+            splitFfmpeg = SPLIT_FFMPEG.any { archive.getEntry("jni/${abi}/${it}") != null }
+            boolean hasUnified = archive.getEntry("jni/${abi}/libffmpeg.so") != null
+            if (splitFfmpeg && hasUnified) throw new GradleException("FFmpeg AAR mixes split libraries and libffmpeg.so for ${abi}")
+            if (!splitFfmpeg && !hasUnified) throw new GradleException("FFmpeg AAR is missing both split libraries and libffmpeg.so for ${abi}")
+            if (splitFfmpeg) {
+                requireSplitFfmpeg(archive, 'libffmpegJNI.so', abi)
+                if (archive.getEntry("jni/${abi}/libffmpegDoviJNI.so") != null) requireSplitFfmpeg(archive, 'libffmpegDoviJNI.so', abi)
+            } else {
+                requireUnifiedFfmpeg(archive, 'libffmpegJNI.so', abi)
+                if (archive.getEntry("jni/${abi}/libffmpegDoviJNI.so") != null) requireUnifiedFfmpeg(archive, 'libffmpegDoviJNI.so', abi)
+                def ffmpeg = readLibrary(archive, 'libffmpeg.so', abi)
+                if (!Collections.disjoint(needed(ffmpeg, abi), SPLIT_FFMPEG)) throw new GradleException("libffmpeg.so depends on split FFmpeg libraries for ${abi}")
+            }
+        }
         new ZipFile(mpvArchive).withCloseable { archive ->
-            if (SPLIT_FFMPEG.any { archive.getEntry("jni/${abi}/${it}") != null }) throw new GradleException("Split FFmpeg libraries remain for ${abi}; rebuild native artifacts")
+            if (SPLIT_FFMPEG.any { archive.getEntry("jni/${abi}/${it}") != null }) throw new GradleException("Split FFmpeg libraries remain in the mpv archive for ${abi}")
+            if (archive.getEntry("jni/${abi}/libffmpeg.so") != null) throw new GradleException("Unified libffmpeg.so remains in the mpv archive for ${abi}")
             for (def name : AbiApkPackaging.MPV_LIBRARIES) {
-                def dependencies = requireUnifiedFfmpeg(archive, name, abi)
+                def dependencies = splitFfmpeg ? requireSplitFfmpeg(archive, name, abi) : requireUnifiedFfmpeg(archive, name, abi)
                 if (name == 'libplayer.so' && !dependencies.contains('libmpv.so')) throw new GradleException("libplayer.so must use libmpv.so for ${abi}")
             }
             def cxx = readLibrary(archive, 'libc++_shared.so', abi)
             needed(cxx, abi)
             hashes['libc++_shared.so'] = sha256(cxx)
         }
-        new ZipFile(ffmpegArchive).withCloseable { archive ->
-            if (SPLIT_FFMPEG.any { archive.getEntry("jni/${abi}/${it}") != null }) throw new GradleException("Split FFmpeg libraries remain for ${abi}; rebuild native artifacts")
-            requireUnifiedFfmpeg(archive, 'libffmpegJNI.so', abi)
-            if (archive.getEntry("jni/${abi}/libffmpegDoviJNI.so") != null) requireUnifiedFfmpeg(archive, 'libffmpegDoviJNI.so', abi)
-            def ffmpeg = readLibrary(archive, 'libffmpeg.so', abi)
-            if (!Collections.disjoint(needed(ffmpeg, abi), SPLIT_FFMPEG)) throw new GradleException("libffmpeg.so depends on split FFmpeg libraries for ${abi}")
-        }
         return hashes
+    }
+
+    private static Set<String> requireSplitFfmpeg(ZipFile archive, String name, String abi) {
+        def dependencies = needed(readLibrary(archive, name, abi), abi)
+        if (dependencies.contains('libffmpeg.so') || Collections.disjoint(dependencies, SPLIT_FFMPEG)) throw new GradleException("${name} must use split FFmpeg libraries for ${abi}")
+        return dependencies
     }
 
     private static Set<String> requireUnifiedFfmpeg(ZipFile archive, String name, String abi) {
