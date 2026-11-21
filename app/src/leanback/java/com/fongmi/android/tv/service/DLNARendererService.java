@@ -76,7 +76,15 @@ public class DLNARendererService extends AndroidUpnpServiceImpl implements Servi
     private boolean bound;
 
     public static void start(Context context) {
-        context.startService(new Intent(context, DLNARendererService.class));
+        Intent intent = new Intent(context, DLNARendererService.class);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent);
+            else context.startService(intent);
+        } catch (Throwable e) {
+            // Android 10+ forbids starting a service from the background.
+            // Never let DLNA setup crash the whole app.
+            e.printStackTrace();
+        }
     }
 
     public static void stop(Context context) {
