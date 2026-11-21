@@ -28,7 +28,6 @@ import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomRowPresenter;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
 import com.fongmi.android.tv.ui.custom.CustomSelector;
-import com.fongmi.android.tv.ui.custom.PosterFly;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.common.collect.Lists;
@@ -134,7 +133,7 @@ public class CollectFragment extends BaseFragment implements CustomScroller.Call
         }
         requireActivity().setResult(Activity.RESULT_OK);
         if (item.isFolder()) VodActivity.start(requireActivity(), item.getSiteKey(), Result.folder(item));
-        else PosterFly.open(requireActivity(), source, item.getName(), item.getPic(), () -> VideoActivity.pick(requireActivity(), item));
+        else VideoActivity.pick(requireActivity(), item);
     }
 
     @Override

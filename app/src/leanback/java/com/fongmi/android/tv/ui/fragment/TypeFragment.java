@@ -35,7 +35,6 @@ import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomRowPresenter;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
 import com.fongmi.android.tv.ui.custom.CustomSelector;
-import com.fongmi.android.tv.ui.custom.PosterFly;
 import com.fongmi.android.tv.ui.presenter.FilterPresenter;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ResUtil;
@@ -55,7 +54,6 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     private CustomScroller mScroller;
     private SiteViewModel mViewModel;
     private List<Filter> mFilters;
-    private boolean headerVisible;
     private boolean filterVisible;
 
     public static TypeFragment newInstance(String key, String typeId, Style style, HashMap<String, String> extend, boolean folder) {
@@ -135,7 +133,6 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), VodPresenter.class);
         selector.addPresenter(ListRow.class, new CustomRowPresenter(8, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ALIGNED), FilterPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
-        mBinding.recycler.setHeader(getActivity(), R.id.recycler);
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
     }
 
@@ -274,9 +271,8 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
             new ViewModelProvider(requireActivity()).get(SiteViewModel.class).action(getKey(), item.getAction());
         } else if (item.isFolder()) {
             getParent().openFolder(item.getId(), mExtends);
-            headerVisible = mBinding.recycler.isHeaderVisible();
         } else {
-            PosterFly.open(requireActivity(), source, item.getName(), item.getPic(), () -> openBest(item));
+            openBest(item);
         }
     }
 
@@ -296,13 +292,7 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (hidden) {
-            mBinding.recycler.showHeader();
-        } else {
-            if (headerVisible) mBinding.recycler.showHeader();
-            else mBinding.recycler.hideHeader();
-            mBinding.recycler.requestFocus();
-        }
+        if (!hidden) mBinding.recycler.requestFocus();
     }
 
     @Override

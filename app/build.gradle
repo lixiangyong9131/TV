@@ -95,12 +95,34 @@ android {
         targetCompatibility JavaVersion.VERSION_21
     }
 
-    // In-app androidx.media3 sources are compile stubs for local builds
-    // without the gitignored Media3 AARs. When ci-libs (lib-*.aar) are
-    // present, those AARs already contain the same classes; compiling
-    // the stubs too causes duplicate-class / R8 failures.
-    def hasMedia3Aars = file('libs').listFiles()?.any { it.name.startsWith('lib-') && it.name.endsWith('.aar') } ?: false
-    if (hasMedia3Aars) {
+    // In-app androidx.media3 sources are compile stubs used by the
+    // working 5.9.0 Mac kit, which does not ship those classes.
+    // Later woven ci-libs AARs do include them; only then exclude the
+    // stubs to avoid duplicate-class / R8 failures.
+    def media3StubClash = false
+    def libsDir = file('libs')
+    if (libsDir.isDirectory()) {
+        libsDir.eachFileMatch(~/lib-.*\.aar/) { aar ->
+            if (media3StubClash) return
+            def zip = new java.util.zip.ZipFile(aar)
+            try {
+                def entry = zip.getEntry('classes.jar')
+                if (entry == null) return
+                def stream = new java.util.zip.ZipInputStream(zip.getInputStream(entry))
+                def item
+                while ((item = stream.nextEntry) != null) {
+                    if (item.name == 'androidx/media3/exoplayer/DecoderManager.class') {
+                        media3StubClash = true
+                        break
+                    }
+                }
+                stream.close()
+            } finally {
+                zip.close()
+            }
+        }
+    }
+    if (media3StubClash) {
         sourceSets {
             main {
                 java.exclude 'androidx/media3/**'

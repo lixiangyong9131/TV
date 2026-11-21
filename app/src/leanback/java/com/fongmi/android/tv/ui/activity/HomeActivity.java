@@ -11,7 +11,6 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.leanback.widget.ArrayObjectAdapter;
 import androidx.leanback.widget.FocusHighlight;
@@ -53,14 +52,10 @@ import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.service.DLNARendererService;
 import com.fongmi.android.tv.service.PlaybackService;
 import com.fongmi.android.tv.ui.adapter.BaseDiffCallback;
-import com.fongmi.android.tv.ui.adapter.HomeBannerAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.CustomRowPresenter;
 import com.fongmi.android.tv.ui.custom.CustomSelector;
 import com.fongmi.android.tv.ui.custom.CustomTitleView;
-import com.fongmi.android.tv.ui.custom.HomeBannerAutoScroll;
-import com.fongmi.android.tv.ui.custom.HomeBanners;
-import com.fongmi.android.tv.ui.custom.PosterFly;
 import com.fongmi.android.tv.ui.dialog.LocalConnectDialog;
 import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.ui.presenter.FuncPresenter;
@@ -100,8 +95,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private ArrayObjectAdapter mAdapter;
     private HistoryPresenter mPresenter;
     private VodPresenter mVodPresenter;
-    private HomeBannerAdapter mBannerAdapter;
-    private HomeBannerAutoScroll mBannerScroll;
     private SiteViewModel mViewModel;
     private Intent pendingAction;
     private boolean actionReady;
@@ -171,8 +164,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
                 mBinding.title.setPivotX(0);
                 mBinding.title.setScaleX(scale);
                 mBinding.title.setScaleY(scale);
-                mBinding.homeBannerBox.setAlpha(Math.max(0f, 1f - factor * 1.2f));
-                mBinding.homeBannerBox.setTranslationY(-mBinding.homeBannerBox.getHeight() * factor);
                 mBinding.toolbar.setAlpha(1f - 0.2f * factor);
                 if (mPresenter.isDelete()) setHistoryDelete(false);
             }
@@ -206,49 +197,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_SMALL, HorizontalGridView.FOCUS_SCROLL_ALIGNED), HistoryPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
-        mBannerAdapter = new HomeBannerAdapter(this::openBanner);
-        mBannerScroll = new HomeBannerAutoScroll(new HomeBannerAutoScroll.Host() {
-            @Override
-            public View view() {
-                return mBinding.homeBanner;
-            }
-
-            @Override
-            public boolean ready() {
-                return mBinding.homeBannerBox.getVisibility() == View.VISIBLE && mBannerAdapter != null && !mBannerAdapter.isEmpty();
-            }
-
-            @Override
-            public int current() {
-                RecyclerView.LayoutManager manager = mBinding.homeBanner.getLayoutManager();
-                if (manager instanceof androidx.recyclerview.widget.LinearLayoutManager linear) {
-                    return Math.max(linear.findFirstVisibleItemPosition(), 0);
-                }
-                return 0;
-            }
-
-            @Override
-            public int count() {
-                return mBannerAdapter.size();
-            }
-
-            @Override
-            public void show(int position) {
-                mBinding.homeBanner.smoothScrollToPosition(position);
-            }
-        });
-        mBinding.homeBanner.setAdapter(mBannerAdapter);
-        if (mBinding.homeBanner.getOnFlingListener() == null) new PagerSnapHelper().attachToRecyclerView(mBinding.homeBanner);
-        mBinding.homeBanner.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                if (mBannerScroll != null) {
-                    mBannerScroll.onScrollState(newState, RecyclerView.SCROLL_STATE_DRAGGING, RecyclerView.SCROLL_STATE_IDLE);
-                }
-            }
-        });
-    }
-
+        padHeader();
     private void setViewModel() {
         mViewModel = new ViewModelProvider(this).get(SiteViewModel.class);
         mViewModel.getAction().observe(this, result -> WebActivity.handleAction(this, result));
@@ -361,28 +310,9 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void addVideo(Result result) {
-        bindBanner(result);
         Style style = result.getStyle(getHome().getStyle());
         if (style.isList()) mAdapter.addAll(mAdapter.size(), result.getList());
         else addGrid(result.getList(), style);
-    }
-
-    private void bindBanner(Result result) {
-        List<Vod> items = HomeBanners.pick(result.getList());
-        mBannerAdapter.setItems(items);
-        if (items.isEmpty()) {
-            mBinding.homeBannerBox.setVisibility(View.GONE);
-            mBinding.title.setNextFocusDownId(R.id.recycler);
-            if (mBannerScroll != null) mBannerScroll.stop();
-            padHeader();
-            return;
-        }
-        mBinding.homeBannerBox.setVisibility(View.VISIBLE);
-        mBinding.homeBanner.scrollToPosition(mBannerAdapter.startPosition());
-        mBinding.title.setNextFocusDownId(R.id.homeBanner);
-        if (mBannerAdapter.size() > 1) mBannerScroll.start();
-        else mBannerScroll.stop();
-        padHeader();
     }
 
     private void padHeader() {
@@ -537,10 +467,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         VideoActivity.pick(this, item);
     }
 
-    private void openBanner(Vod item, View source) {
-        PosterFly.open(this, source, item.getName(), item.getPic(), () -> VideoActivity.pick(this, item));
-    }
-
     @Override
     public void onItemClick(Vod item) {
         onItemClick(item, null);
@@ -552,7 +478,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
             mViewModel.action(getHome().getKey(), item.getAction());
             return;
         }
-        PosterFly.open(this, source, item.getName(), item.getPic(), () -> openBest(item));
+        openBest(item);
     }
 
     @Override
@@ -601,7 +527,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (KeyUtil.isMenuKey(event)) showDialog();
         if (KeyUtil.isActionDown(event) & KeyUtil.isDownKey(event) && getCurrentFocus() == mBinding.title) {
-            if (mBinding.homeBannerBox.getVisibility() == View.VISIBLE) return mBinding.homeBanner.requestFocus();
             View first = mBinding.recycler.getChildAt(0);
             return first != null && first.requestFocus();
         }
@@ -612,14 +537,12 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     protected void onResume() {
         super.onResume();
         mClock.start();
-        if (mBannerScroll != null && mBannerAdapter != null && mBannerAdapter.size() > 1) mBannerScroll.resume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mClock.stop();
-        if (mBannerScroll != null) mBannerScroll.pause();
     }
 
     @Override
@@ -638,7 +561,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     protected void onDestroy() {
-        if (mBannerScroll != null) mBannerScroll.stop();
         if (--instanceCount == 0 && !isChangingConfigurations()) {
             BackupManager.backup();
             releaseResources();
