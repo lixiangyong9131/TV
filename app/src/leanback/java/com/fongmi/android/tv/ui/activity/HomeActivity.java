@@ -198,6 +198,8 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
         padHeader();
+    }
+
     private void setViewModel() {
         mViewModel = new ViewModelProvider(this).get(SiteViewModel.class);
         mViewModel.getAction().observe(this, result -> WebActivity.handleAction(this, result));
