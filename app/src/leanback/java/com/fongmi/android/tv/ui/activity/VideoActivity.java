@@ -120,6 +120,8 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     private VodPlaybackController mVod;
     private FlagAdapter mFlagAdapter;
     private EpisodeAdapter mEpisodeAdapter;
+    private List<Episode> episodeItems = new ArrayList<>();
+    private boolean episodesExpanded;
     private QualityAdapter mQualityAdapter;
     private ArrayAdapter mArrayAdapter;
     private PartAdapter mPartAdapter;
@@ -373,6 +375,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         mBinding.video.setOnClickListener(view -> onVideo());
         mBinding.change.setOnClickListener(view -> onChange());
         mBinding.speedTest.setOnClickListener(view -> startSpeedTest());
+        mBinding.allEpisodes.setOnClickListener(view -> onAllEpisodes());
         mBinding.qualitySwitch.setOnClickListener(view -> mVod.switchQualitySource());
         mBinding.control.action.qualitySwitch.setOnClickListener(view -> mVod.switchQualitySource());
         mBinding.content.setOnClickListener(view -> onContent());
@@ -866,6 +869,7 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
             PickSilence.exit();
         }
         holdView(mBinding.video, hold);
+        holdView(mBinding.detailInfo, hold);
         holdView(mBinding.name, hold);
         holdView(mBinding.detailMeta, hold);
         holdView(mBinding.director, hold);
@@ -1101,10 +1105,51 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private void setEpisodeAdapter(List<Episode> items) {
+        episodeItems = new ArrayList<>(items);
+        int selected = 0;
+        for (int i = 0; i < items.size(); i++) if (items.get(i).isSelected()) selected = i;
+        if (selected >= 12) episodesExpanded = true;
         mBinding.episode.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
         mEpisodeAdapter.addAll(items);
+        bindAllEpisodes();
+        updateEpisodeGrid();
         setArrayAdapter(items.size());
         setR2Callback();
+    }
+
+    private void bindAllEpisodes() {
+        int size = episodeItems.size();
+        mBinding.allEpisodes.setVisibility(size > 12 ? View.VISIBLE : View.GONE);
+        mBinding.allEpisodesText.setText(episodesExpanded ? getString(R.string.detail_collapse_episodes) : getString(R.string.detail_all_episodes, size));
+        mBinding.allEpisodesIcon.animate().cancel();
+        mBinding.allEpisodesIcon.setRotation(episodesExpanded ? 180f : 0f);
+    }
+
+    private void onAllEpisodes() {
+        episodesExpanded = !episodesExpanded;
+        mBinding.allEpisodes.setVisibility(episodeItems.size() > 12 ? View.VISIBLE : View.GONE);
+        mBinding.allEpisodesText.setText(episodesExpanded ? getString(R.string.detail_collapse_episodes) : getString(R.string.detail_all_episodes, episodeItems.size()));
+        mBinding.allEpisodesIcon.animate().cancel();
+        mBinding.allEpisodesIcon.animate().rotation(episodesExpanded ? 180f : 0f).setDuration(100).start();
+        updateEpisodeGrid();
+        setR2Callback();
+    }
+
+    private void updateEpisodeGrid() {
+        int count = mEpisodeAdapter.getItemCount();
+        int rowHeight = ResUtil.dp2px(44);
+        int spacing = ResUtil.dp2px(8);
+        int rows = 1;
+        if (episodesExpanded && count > 0) {
+            int perRow = Math.max(1, (ResUtil.getScreenWidth() - ResUtil.dp2px(48)) / ResUtil.dp2px(72));
+            rows = Math.min(5, Math.max(1, (int) Math.ceil(count / (float) perRow)));
+        }
+        mBinding.episode.setNumRows(rows);
+        mBinding.episode.setVerticalSpacing(spacing);
+        mBinding.episode.setRowHeight(rowHeight);
+        ViewGroup.LayoutParams lp = mBinding.episode.getLayoutParams();
+        lp.height = rowHeight * rows + spacing * Math.max(0, rows - 1);
+        mBinding.episode.setLayoutParams(lp);
     }
 
     @Override
@@ -1134,19 +1179,19 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private int findFocusDown(int index) {
-        List<Integer> orders = Arrays.asList(R.id.flag, R.id.quality, R.id.episode, R.id.array, R.id.part, R.id.quick);
+        List<Integer> orders = Arrays.asList(R.id.flag, R.id.quality, R.id.episode, R.id.allEpisodes, R.id.array, R.id.part, R.id.quick);
         for (int i = 0; i < orders.size(); i++) if (i > index) if (isVisible(findViewById(orders.get(i)))) return orders.get(i);
         return 0;
     }
 
     private int findFocusUp(int index) {
-        List<Integer> orders = Arrays.asList(R.id.flag, R.id.quality, R.id.episode, R.id.array, R.id.part, R.id.quick);
+        List<Integer> orders = Arrays.asList(R.id.flag, R.id.quality, R.id.episode, R.id.allEpisodes, R.id.array, R.id.part, R.id.quick);
         for (int i = orders.size() - 1; i >= 0; i--) if (i < index) if (isVisible(findViewById(orders.get(i)))) return orders.get(i);
         return 0;
     }
 
     private void updateFocus() {
-        mPartAdapter.setNextFocusUp(findFocusUp(4));
+        mPartAdapter.setNextFocusUp(findFocusUp(5));
         mEpisodeAdapter.setNextFocusUp(findFocusUp(2));
         mFlagAdapter.setNextFocusDown(findFocusDown(0));
         mEpisodeAdapter.setNextFocusDown(findFocusDown(2));

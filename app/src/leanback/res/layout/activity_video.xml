@@ -59,13 +59,20 @@
 
     </FrameLayout>
 
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/detailInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/video"
+        android:layout_marginEnd="24dp"
+        android:layout_toEndOf="@id/video"
+        android:minHeight="225dp"
+        android:orientation="vertical">
+
     <com.google.android.flexbox.FlexboxLayout
         android:id="@+id/nameRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_toEndOf="@+id/video"
         app:alignItems="center"
         app:flexWrap="nowrap">
 
@@ -102,10 +109,7 @@
         android:id="@+id/detailMeta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/nameRow"
-        android:layout_alignStart="@+id/nameRow"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
         app:alignItems="center"
         app:flexWrap="wrap" />
 
@@ -113,10 +117,7 @@
         android:id="@+id/director"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/detailMeta"
-        android:layout_alignStart="@+id/nameRow"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
         android:background="@drawable/bg_liquid_card"
         android:nextFocusDown="@id/actor"
         android:singleLine="true"
@@ -128,10 +129,7 @@
         android:id="@+id/actor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/director"
-        android:layout_alignStart="@+id/nameRow"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
         android:background="@drawable/bg_liquid_card"
         android:ellipsize="end"
         android:maxLines="2"
@@ -144,8 +142,7 @@
         android:id="@+id/row2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/nameRow"
-        android:layout_alignBottom="@+id/video"
+        android:layout_marginTop="12dp"
         android:orientation="horizontal">
 
         <com.google.android.material.textview.MaterialTextView
@@ -222,11 +219,13 @@
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/video"
+        android:layout_below="@+id/detailInfo"
         android:overScrollMode="never">
 
         <androidx.appcompat.widget.LinearLayoutCompat
@@ -318,6 +317,46 @@
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
                 android:visibility="gone" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/allEpisodes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_detail_all"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center"
+                android:minHeight="44dp"
+                android:nextFocusUp="@id/episode"
+                android:nextFocusDown="@id/array"
+                android:orientation="horizontal"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/allEpisodesText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:duplicateParentState="true"
+                    android:text="@string/detail_all_episodes"
+                    android:textColor="@color/selector_func"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/allEpisodesIcon"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:duplicateParentState="true"
+                    android:src="@drawable/ic_kino_chevron_down"
+                    android:tint="@color/selector_func" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
             <include
                 android:id="@+id/castBox"
