@@ -94,6 +94,19 @@ android {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
     }
+
+    // In-app androidx.media3 sources are compile stubs for local builds
+    // without the gitignored Media3 AARs. When ci-libs (lib-*.aar) are
+    // present, those AARs already contain the same classes; compiling
+    // the stubs too causes duplicate-class / R8 failures.
+    def hasMedia3Aars = file('libs').listFiles()?.any { it.name.startsWith('lib-') && it.name.endsWith('.aar') } ?: false
+    if (hasMedia3Aars) {
+        sourceSets {
+            main {
+                java.exclude 'androidx/media3/**'
+            }
+        }
+    }
 }
 
 tasks.withType(org.gradle.api.tasks.compile.JavaCompile).configureEach {
