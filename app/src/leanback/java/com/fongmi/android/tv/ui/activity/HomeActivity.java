@@ -153,8 +153,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Override
     protected void initEvent() {
         mBinding.title.setListener(this);
-        mBinding.homeSearch.setOnClickListener(view -> SearchActivity.start(this));
-        mBinding.homeHistory.setOnClickListener(view -> HistoryActivity.start(this));
         mBinding.recycler.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
             @Override
             public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {

@@ -63,28 +63,6 @@
                 android:textColor="@color/white"
                 android:textSize="24sp" />
 
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/homeSearch"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:padding="12dp"
-                android:src="@drawable/ic_kino_search" />
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/homeHistory"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="16dp"
-                android:background="@drawable/selector_item"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:padding="12dp"
-                android:src="@drawable/ic_kino_history" />
-
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/clock"
                 android:layout_width="wrap_content"

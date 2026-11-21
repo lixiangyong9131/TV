@@ -260,7 +260,9 @@
 
             <include
                 android:id="@+id/pick"
-                layout="@layout/view_pick_progress" />
+                layout="@layout/view_pick_progress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
             <androidx.leanback.widget.HorizontalGridView
                 android:id="@+id/flag"
